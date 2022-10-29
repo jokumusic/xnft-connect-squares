@@ -1,0 +1,23 @@
+{
+  "name": "xnft-quickstart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "xnft build",
+    "start": "xnft watch",
+    "dev": "xnft dev",
+    "prod": "yarn build && http-server . -p 9933"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@coral-xyz/xnft-cli": "^0.2.0-latest.95",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "@parcel/config-default": "^2.7.0",
+    "react": "^17.0.2",
+    "react-xnft": "^0.2.0-latest.95"
+  }
+}

@@ -1,0 +1,598 @@
+export type TicTacToe = {
+    "version": "0.1.0",
+    "name": "tic_tac_toe",
+    "instructions": [
+      {
+        "name": "gameInit",
+        "accounts": [
+          {
+            "name": "creator",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pot",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "rows",
+            "type": "u8"
+          },
+          {
+            "name": "cols",
+            "type": "u8"
+          },
+          {
+            "name": "minPlayers",
+            "type": "u8"
+          },
+          {
+            "name": "maxPlayers",
+            "type": "u8"
+          },
+          {
+            "name": "wager",
+            "type": "u32"
+          }
+        ]
+      },
+      {
+        "name": "gameJoin",
+        "accounts": [
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pot",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "player",
+            "isMut": true,
+            "isSigner": true
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "gamePlay",
+        "accounts": [
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pot",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "player",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "tile",
+            "type": {
+              "defined": "Tile"
+            }
+          }
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "name": "game",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "creator",
+              "type": "publicKey"
+            },
+            {
+              "name": "state",
+              "type": {
+                "defined": "GameState"
+              }
+            },
+            {
+              "name": "rows",
+              "type": "u8"
+            },
+            {
+              "name": "cols",
+              "type": "u8"
+            },
+            {
+              "name": "minPlayers",
+              "type": "u8"
+            },
+            {
+              "name": "maxPlayers",
+              "type": "u8"
+            },
+            {
+              "name": "moves",
+              "type": "u8"
+            },
+            {
+              "name": "wager",
+              "type": "u32"
+            },
+            {
+              "name": "pot",
+              "type": "publicKey"
+            },
+            {
+              "name": "initTimestamp",
+              "type": "i64"
+            },
+            {
+              "name": "lastMoveSlot",
+              "type": "u64"
+            },
+            {
+              "name": "joinedPlayers",
+              "type": "u8"
+            },
+            {
+              "name": "currentPlayerIndex",
+              "type": "u8"
+            },
+            {
+              "name": "board",
+              "type": {
+                "vec": {
+                  "vec": {
+                    "option": "u8"
+                  }
+                }
+              }
+            },
+            {
+              "name": "players",
+              "type": {
+                "vec": "publicKey"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "pot",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "game",
+              "type": "publicKey"
+            }
+          ]
+        }
+      }
+    ],
+    "types": [
+      {
+        "name": "Tile",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "row",
+              "type": "u8"
+            },
+            {
+              "name": "column",
+              "type": "u8"
+            }
+          ]
+        }
+      },
+      {
+        "name": "GameState",
+        "type": {
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Waiting"
+            },
+            {
+              "name": "Active"
+            },
+            {
+              "name": "Tie"
+            },
+            {
+              "name": "Won",
+              "fields": [
+                {
+                  "name": "winner",
+                  "type": "publicKey"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "code": 6000,
+        "name": "TileOutOfBounds",
+        "msg": "specified tile is out of bounds"
+      },
+      {
+        "code": 6001,
+        "name": "TileAlreadySet",
+        "msg": "specified tile is occupied"
+      },
+      {
+        "code": 6002,
+        "name": "GameAlreadyOver",
+        "msg": "game has already ended"
+      },
+      {
+        "code": 6003,
+        "name": "NotPlayersTurn",
+        "msg": "it is not your player's turn"
+      },
+      {
+        "code": 6004,
+        "name": "GameAlreadyStarted",
+        "msg": "game has already started"
+      },
+      {
+        "code": 6005,
+        "name": "NotAcceptingPlayers",
+        "msg": "game is not accepting new players"
+      },
+      {
+        "code": 6006,
+        "name": "PayoutDebitNumericalOverflow",
+        "msg": "debiting the game pot has caused a numerical overflow"
+      },
+      {
+        "code": 6007,
+        "name": "PayoutCreditNumericalOverflow",
+        "msg": "crediting the winner account has caused a numerical overflow"
+      },
+      {
+        "code": 6008,
+        "name": "PlayerWinnerMismatch",
+        "msg": "player and winner don't match"
+      }
+    ]
+  };
+  
+  export const IDL: TicTacToe = {
+    "version": "0.1.0",
+    "name": "tic_tac_toe",
+    "instructions": [
+      {
+        "name": "gameInit",
+        "accounts": [
+          {
+            "name": "creator",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pot",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "rows",
+            "type": "u8"
+          },
+          {
+            "name": "cols",
+            "type": "u8"
+          },
+          {
+            "name": "minPlayers",
+            "type": "u8"
+          },
+          {
+            "name": "maxPlayers",
+            "type": "u8"
+          },
+          {
+            "name": "wager",
+            "type": "u32"
+          }
+        ]
+      },
+      {
+        "name": "gameJoin",
+        "accounts": [
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pot",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "player",
+            "isMut": true,
+            "isSigner": true
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "gamePlay",
+        "accounts": [
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pot",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "player",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "tile",
+            "type": {
+              "defined": "Tile"
+            }
+          }
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "name": "game",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "creator",
+              "type": "publicKey"
+            },
+            {
+              "name": "state",
+              "type": {
+                "defined": "GameState"
+              }
+            },
+            {
+              "name": "rows",
+              "type": "u8"
+            },
+            {
+              "name": "cols",
+              "type": "u8"
+            },
+            {
+              "name": "minPlayers",
+              "type": "u8"
+            },
+            {
+              "name": "maxPlayers",
+              "type": "u8"
+            },
+            {
+              "name": "moves",
+              "type": "u8"
+            },
+            {
+              "name": "wager",
+              "type": "u32"
+            },
+            {
+              "name": "pot",
+              "type": "publicKey"
+            },
+            {
+              "name": "initTimestamp",
+              "type": "i64"
+            },
+            {
+              "name": "lastMoveSlot",
+              "type": "u64"
+            },
+            {
+              "name": "joinedPlayers",
+              "type": "u8"
+            },
+            {
+              "name": "currentPlayerIndex",
+              "type": "u8"
+            },
+            {
+              "name": "board",
+              "type": {
+                "vec": {
+                  "vec": {
+                    "option": "u8"
+                  }
+                }
+              }
+            },
+            {
+              "name": "players",
+              "type": {
+                "vec": "publicKey"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "pot",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "game",
+              "type": "publicKey"
+            }
+          ]
+        }
+      }
+    ],
+    "types": [
+      {
+        "name": "Tile",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "row",
+              "type": "u8"
+            },
+            {
+              "name": "column",
+              "type": "u8"
+            }
+          ]
+        }
+      },
+      {
+        "name": "GameState",
+        "type": {
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Waiting"
+            },
+            {
+              "name": "Active"
+            },
+            {
+              "name": "Tie"
+            },
+            {
+              "name": "Won",
+              "fields": [
+                {
+                  "name": "winner",
+                  "type": "publicKey"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "code": 6000,
+        "name": "TileOutOfBounds",
+        "msg": "specified tile is out of bounds"
+      },
+      {
+        "code": 6001,
+        "name": "TileAlreadySet",
+        "msg": "specified tile is occupied"
+      },
+      {
+        "code": 6002,
+        "name": "GameAlreadyOver",
+        "msg": "game has already ended"
+      },
+      {
+        "code": 6003,
+        "name": "NotPlayersTurn",
+        "msg": "it is not your player's turn"
+      },
+      {
+        "code": 6004,
+        "name": "GameAlreadyStarted",
+        "msg": "game has already started"
+      },
+      {
+        "code": 6005,
+        "name": "NotAcceptingPlayers",
+        "msg": "game is not accepting new players"
+      },
+      {
+        "code": 6006,
+        "name": "PayoutDebitNumericalOverflow",
+        "msg": "debiting the game pot has caused a numerical overflow"
+      },
+      {
+        "code": 6007,
+        "name": "PayoutCreditNumericalOverflow",
+        "msg": "crediting the winner account has caused a numerical overflow"
+      },
+      {
+        "code": 6008,
+        "name": "PlayerWinnerMismatch",
+        "msg": "player and winner don't match"
+      }
+    ]
+  };
+  
