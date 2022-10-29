@@ -1,6 +1,6 @@
-# xnft-quickstart
+# GamePouch
 
-Quickstart repo for building your own xNFT.
+xNFT containing collections of games
 
 ## Developing
 
