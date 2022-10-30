@@ -21,18 +21,23 @@ const defaultNewGameSettings = {
 
 export function ScreenTicTacToeGameList() {
   const nav = useNavigation();
-  const [[openGames, isLoading]] = useState<[[Game], boolean]>([mockGames,false]);//useOpenGames(true);
+  //const [[openGames, isLoading]] = useState<[[Game], boolean]>([mockGames,false]);
+  const [openGames, isLoading] = useOpenGames(true);
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
   const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
 
   async function onConfigureNewGameClick() {
+    console.log('configuring new game...');
     setNewGameSettings(defaultNewGameSettings);
     setCreateGameFormIsVisible(true);
   }
   
   async function onCreateGameClick() {
-    //const createdGame = await createGame(newGameSettings.rows, newGameSettings.cols, newGameSettings.maxPlayers, 
-    //  newGameSettings.maxPlayers, newGameSettings.wager);
+    alert('hi');
+    console.log('creating game... ', newGameSettings);
+    const createdGame = await createGame(newGameSettings.rows, newGameSettings.cols, newGameSettings.maxPlayers, 
+      newGameSettings.maxPlayers, newGameSettings.wager)
+      .catch(err=>alert(err.toString()));
     
     setCreateGameFormIsVisible(false);
   }

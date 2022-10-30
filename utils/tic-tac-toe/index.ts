@@ -103,9 +103,11 @@ export async function createGame(rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=0
   .transaction();
 
   const connection = useConnection();
+  console.log('getting latest blockhash');
   const { blockhash } = await connection!.getLatestBlockhash("recent");
   tx.recentBlockhash = blockhash;
 
+  console.log('sending transaction');
   const txSignature = await window.xnft.send(tx);
   console.log("tx signature", txSignature);
 
