@@ -10,8 +10,8 @@ import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts
 import {tableRowStyle,tableCellStyle, buttonStyle} from "../styles";
 
 const mockGames : [Game] =[
-{wager: 0.001, rows: 3, cols: 3, joined_players: 1, init_timestamp: 1111111222, max_players: 2 },
-{wager: 0.01, rows: 3, cols: 3, joined_players: 1, init_timestamp: 1111111111, max_players: 2 },
+{wager: 0.001, rows: 3, cols: 3, joinedPlayers: 1, initTimestamp: 1111111222, maxPlayers: 2 },
+{wager: 0.01, rows: 3, cols: 3, joinedPlayers: 1, initTimestamp: 1111111111, maxPlayers: 2 },
 ];
 
 const defaultNewGameSettings = {
@@ -77,12 +77,29 @@ export function ScreenTicTacToeGameList() {
   }
 
   async function onJoinGameClick(game: Game) {
-    console.log('ttt joining game:', game.address.toBase58(), ' pot: ', game.pot.toBase58());
-    const joinedGame = await joinGame(connection, wallet, game.address)
-      .catch(err=>console.log('ttt: ', err.toString()));
+    console.log('ttt joining game:', game.address.toBase58);
 
-    if(joinedGame)
-      nav.push("screen-tictactoe-game", {game: joinedGame});
+    const isInGame = game.players.findIndex(p=>{
+      return wallet.equals(p)
+    });
+
+    console.log('ttt game.state: ', game.state);
+    if(isInGame && game.state?.active) {
+      console.log('ttt already an active player. Entering game...');
+      nav.push("screen-tictactoe-game", {game});
+    } else {
+      const joinedGame = await joinGame(connection, wallet, game.address)
+        .catch(err=>console.log('ttt: ', err.toString()));
+      
+      if(joinedGame)
+          nav.push("screen-tictactoe-game", {game: joinedGame});
+    }
+
+
+    
+   
+
+    
     
   }
 
@@ -106,7 +123,9 @@ export function ScreenTicTacToeGameList() {
       </BalancesTableHead>
       <BalancesTableContent>
       { openGames.map((game:Game)=>(
-        <BalancesTableRow style={tableRowStyle} onClick={()=>onJoinGameClick(game)}>
+        <BalancesTableRow 
+          style={[tableRowStyle]}
+          onClick={()=>onJoinGameClick(game)}>
           <BalancesTableCell style={tableCellStyle} title={"join"} />
           <BalancesTableCell style={tableCellStyle} title={game.wager.toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>

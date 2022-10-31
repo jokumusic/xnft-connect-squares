@@ -12,10 +12,10 @@ import { IDL as IDL_TIC_TAC_TOE, TicTacToe } from "./tic-tac-toe";
 export const PID_TIC_TAC_TOE = new PublicKey("H5k95qzHVCoKJSDCE5WLJ9kcmfSWn89sw4gWkjGY76DB");
 
 export const GameState = {
-  Waiting: {waiting:{}},
-  Active: {active:{}},
-  Tie: {tie:{}},
-  Won: {won:{}},
+  waiting:{},
+  active:{},
+  tie:{},
+  won:{}
 };
 
 export interface Game {
@@ -48,10 +48,12 @@ async function getGamePda(wallet: PublicKey) {
 }
 
 async function getPotPda(gamePda: PublicKey) {
-  const [potPda, potPdaBump] = PublicKey.findProgramAddressSync(
+  const [potPda, potPdaBump] = PublicKey.findProgramAddressSync( 
     [Buffer.from("pot"), gamePda.toBuffer()],
     PID_TIC_TAC_TOE
-  ); 
+  );
+
+  console.log('ttt potpdabump: ', potPdaBump);
 
   return potPda;
 }
@@ -133,7 +135,7 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
 
 
   const newResp = await getGameAccounts([
-    { memcmp: { offset: 41, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
+    //{ memcmp: { offset: 41, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
   ]);
 
 
@@ -173,16 +175,15 @@ export async function getGameByAddress(gameAddress: PublicKey) {
 
 export async function joinGame(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
   const client = tictactoeClient();
-  const potPda = await getPotPda(gameAddress);
-  console.log('ttt pot join: ', potPda.toBase58());
-
+  const potAddress = await getPotPda(gameAddress);
+  console.log('ttt pot join: ', potAddress.toBase58());
   console.log('ttt player join:', player.toBase58());
   const tx = await client.methods
   .gameJoin()
   .accounts({
     player,
     game: gameAddress,
-    pot: potPda,
+    pot: potAddress,
   })
   .transaction();
   
