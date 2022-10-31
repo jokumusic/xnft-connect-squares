@@ -950,6 +950,27 @@
     snake-case "^3.0.4"
     toml "^3.0.0"
 
+"@project-serum/anchor@^0.25.0":
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/@project-serum/anchor/-/anchor-0.25.0.tgz#88ee4843336005cf5a64c80636ce626f0996f503"
+  integrity sha512-E6A5Y/ijqpfMJ5psJvbw0kVTzLZFUcOFgs6eSM2M2iWE1lVRF18T6hWZVNl6zqZsoz98jgnNHtVGJMs+ds9A7A==
+  dependencies:
+    "@project-serum/borsh" "^0.2.5"
+    "@solana/web3.js" "^1.36.0"
+    base64-js "^1.5.1"
+    bn.js "^5.1.2"
+    bs58 "^4.0.1"
+    buffer-layout "^1.2.2"
+    camelcase "^5.3.1"
+    cross-fetch "^3.1.5"
+    crypto-hash "^1.3.0"
+    eventemitter3 "^4.0.7"
+    js-sha256 "^0.9.0"
+    pako "^2.0.3"
+    snake-case "^3.0.4"
+    superstruct "^0.15.4"
+    toml "^3.0.0"
+
 "@project-serum/borsh@^0.0.1-beta.0":
   version "0.0.1-beta.0"
   resolved "https://registry.yarnpkg.com/@project-serum/borsh/-/borsh-0.0.1-beta.0.tgz#8ab465ac23e0d840127c7922f8a1a500b50667d5"
@@ -1033,10 +1054,10 @@
     rpc-websockets "^7.5.0"
     superstruct "^0.14.2"
 
-"@solana/web3.js@^1.63.1":
-  version "1.66.1"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.66.1.tgz#f11bf657e76500780a1b94fa286e9ff9e6106c71"
-  integrity sha512-AAVW9vGqYo8m2kMdwQtzEFuEBT21D0Z13wCzGC0lv4vay1BaqDUGSangmakeDEirtIsaAtM0gfAPu1YNLkIy/Q==
+"@solana/web3.js@^1.63.1", "@solana/web3.js@^1.66.2":
+  version "1.66.2"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.66.2.tgz#80b43c5868b846124fe3ebac7d3943930c3fa60c"
+  integrity sha512-RyaHMR2jGmaesnYP045VLeBGfR/gAW3cvZHzMFGg7bkO+WOYOYp1nEllf0/la4U4qsYGKCsO9eEevR5fhHiVHg==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@noble/ed25519" "^1.7.0"
@@ -3349,10 +3370,10 @@ react-transition-group@^4.4.5:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react-xnft@^0.2.0-latest.95:
-  version "0.2.0-latest.95"
-  resolved "https://registry.yarnpkg.com/react-xnft/-/react-xnft-0.2.0-latest.95.tgz#17195c8206a525ba459b52e1ed8b94329b6f4027"
-  integrity sha512-ypqf5F7n5MKkg48UnYQQzAwQcOTpE0mRmdm583HZscD/xbPmDAeRk4MgEiFSlEv8Bq9c/WpgsDeTpgfMZ3vWiQ==
+react-xnft@latest:
+  version "0.2.0-latest.316"
+  resolved "https://registry.yarnpkg.com/react-xnft/-/react-xnft-0.2.0-latest.316.tgz#874a4b4c9e3468da1e9567b9d11021005f8382e8"
+  integrity sha512-O6y7+wnMYuJikOrgdDWJiiayFQKeDKIpndAomSIXZb4vmC5m34jOCpPHpDUhABCJ/4nJhYcHkKuclv+xguMRNg==
   dependencies:
     "@coral-xyz/common-public" "*"
     "@coral-xyz/themes" "*"
@@ -3630,6 +3651,11 @@ superstruct@^0.14.2:
   version "0.14.2"
   resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-0.14.2.tgz#0dbcdf3d83676588828f1cf5ed35cda02f59025b"
   integrity sha512-nPewA6m9mR3d6k7WkZ8N8zpTWfenFH3q9pA2PkuiZxINr9DKB2+40wEQf0ixn8VaGuJ78AB6iWOtStI+/4FKZQ==
+
+superstruct@^0.15.4:
+  version "0.15.5"
+  resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-0.15.5.tgz#0f0a8d3ce31313f0d84c6096cd4fa1bfdedc9dab"
+  integrity sha512-4AOeU+P5UuE/4nOUkmcQdW5y7i9ndt1cQd/3iUe+LTz3RxESf/W/5lg4B74HbDMMv8PHnPnGCQFH45kBcrQYoQ==
 
 supports-color@^5.3.0:
   version "5.5.0"

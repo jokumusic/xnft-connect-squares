@@ -1,47 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect} from "react";
 import ReactXnft, {
   LocalStorage,
-  usePublicKey,
-  useConnection,
   AnchorDom,
 } from "react-xnft";
 import { PublicKey, Connection } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
-import { Program } from "@project-serum/anchor";
+import { Program, utils } from "@project-serum/anchor";
+import * as anchor from "@project-serum/anchor";
 import { IDL as IDL_TIC_TAC_TOE, TicTacToe } from "./tic-tac-toe";
 
 export const PID_TIC_TAC_TOE = new PublicKey("H5k95qzHVCoKJSDCE5WLJ9kcmfSWn89sw4gWkjGY76DB");
 
-export enum GameState {
-  Waiting,
-  Active,
-  Tie,
-  Won,
-}
+export const GameState = {
+  Waiting: {waiting:{}},
+  Active: {active:{}},
+  Tie: {tie:{}},
+  Won: {won:{}},
+};
 
 export interface Game {
+  address: PublicKey,
   bump: number,
   creator: PublicKey,
-  state: GameState,
+  state: typeof GameState,
   rows: number,
   cols: number,
-  min_players: number,
-  max_players: number,
+  minPlayers: number,
+  maxPlayers: number,
   moves: number,
   wager: number,
   pot: PublicKey,
-  init_timestamp: number,
-  last_move_slot: number,
-  joined_players: number,
-  current_player_index: number,
+  initTimestamp: number,
+  lastMoveSlot: number,
+  joinedPlayers: number,
+  currentPlayerIndex: number,
   board: [[number]],
   players: [PublicKey],
 }
 
-async function getGamePda() {
-  const publicKey = usePublicKey();
+async function getGamePda(wallet: PublicKey) {
   const [gamePda, gamePdaBump] = PublicKey.findProgramAddressSync(
-    [Buffer.from("game"), publicKey.toBuffer()],
+    [Buffer.from("game"), wallet.toBuffer()],
     PID_TIC_TAC_TOE
   );
 
@@ -49,7 +48,6 @@ async function getGamePda() {
 }
 
 async function getPotPda(gamePda: PublicKey) {
-  const publicKey = usePublicKey();
   const [potPda, potPdaBump] = PublicKey.findProgramAddressSync(
     [Buffer.from("pot"), gamePda.toBuffer()],
     PID_TIC_TAC_TOE
@@ -59,14 +57,13 @@ async function getPotPda(gamePda: PublicKey) {
 }
 
 // @param withReload is true if we want to poll for a constant refresh.
-export function useOpenGames(withReload = true) {
-  const publicKey = usePublicKey();
+export function useOpenGames(connection: Connection, wallet: PublicKey, withReload = true) {
   const [[games, isLoading], setGamesIsLoading] = useState<[[Game], boolean]>([[], true]);
 
   useEffect(() => {
     const fetchOpenGames = async () => {
       try {
-        const openGames = await getOpenGames()
+        const openGames = await getOpenGames(connection, wallet)
         setGamesIsLoading([openGames, false]);
       } catch (err) {
         console.error(err);
@@ -88,41 +85,37 @@ export function tictactoeClient(): Program<TicTacToe> {
   return new Program<TicTacToe>(IDL_TIC_TAC_TOE, PID_TIC_TAC_TOE, window.xnft);
 }
 
-export async function createGame(rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=0.001) : Promise<Game> {
-  const publicKey = usePublicKey();
+export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=0.001) : Promise<Game> {
   const client = tictactoeClient();
-  const gamePda = await getGamePda();
+  const gamePda = await getGamePda(creator);
   const potPda = await getPotPda(gamePda);
   const tx = await client.methods
   .gameInit(rows,cols, minPlayers,maxPlayers, wager)
   .accounts({
-    creator: publicKey,
+    creator: creator,
     game: gamePda,
-    pot: potPda,     
+    pot: potPda,
   })
   .transaction();
-
-  const connection = useConnection();
+  
   console.log('getting latest blockhash');
-  const { blockhash } = await connection!.getLatestBlockhash("recent");
+  const { blockhash } = await connection.getLatestBlockhash().catch(err=>console.log('ttt: ' + err));
   tx.recentBlockhash = blockhash;
+  tx.feePayer = creator;
 
   console.log('sending transaction');
-  const txSignature = await window.xnft.send(tx);
+  const txSignature = await window.xnft.solana.send(tx);
   console.log("tx signature", txSignature);
 
   const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
         
-  let game = await client.account.game.fetch(gamePda);
-  return {...game, address: gamePda} as Game;  
+  return getGameByAddress(gamePda);
 }
 
 
-export async function getOpenGames(): Promise<[Game]> {
-  const connection = useConnection();
-  const publicKey = usePublicKey();
+export async function getOpenGames(connection:Connection, wallet: PublicKey): Promise<[Game]> {
   const url = connection.rpcEndpoint;
-  const cacheKey = `${url}:OpenGames:${publicKey.toString()}`;
+  const cacheKey = `${url}:OpenGames:${wallet.toString()}`;
   const val = await LocalStorage.get(cacheKey);
 
   //
@@ -138,12 +131,11 @@ export async function getOpenGames(): Promise<[Game]> {
     }
   }
 
-  const newResp = await getGameAccounts([{
-      memcmp: {
-          offset: 41,
-          bytes: GameState.Waiting.toString(),
-      }
-  }]);
+
+  const newResp = await getGameAccounts([
+    { memcmp: { offset: 41, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
+  ]);
+
 
   LocalStorage.set(
     cacheKey,
@@ -155,7 +147,7 @@ export async function getOpenGames(): Promise<[Game]> {
   return newResp;
 }
 
-async function getGameAccounts(filters?: Buffer | web3.GetProgramAccountsFilter[]) : Promise<[Game]> {
+export async function getGameAccounts(filters?: Buffer | web3.GetProgramAccountsFilter[]) : Promise<[Game]> {
   return new Promise<any>(async (resolve, reject) => {
       const list = [];
       const client = tictactoeClient();
@@ -166,9 +158,43 @@ async function getGameAccounts(filters?: Buffer | web3.GetProgramAccountsFilter[
         return;
 
       const gameObjects = games.map(g=>{
-        return {...g.account, address: g.publicKey};
+        return {...g.account, address: new PublicKey(g.publicKey)};
       });
 
       resolve(gameObjects);
   });
+}
+
+export async function getGameByAddress(gameAddress: PublicKey) {
+  const client = tictactoeClient();
+  let game = await client.account.game.fetch(gameAddress);
+  return {...game, address: gameAddress} as Game;
+}
+
+export async function joinGame(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
+  const client = tictactoeClient();
+  const potPda = await getPotPda(gameAddress);
+  console.log('ttt pot join: ', potPda.toBase58());
+
+  console.log('ttt player join:', player.toBase58());
+  const tx = await client.methods
+  .gameJoin()
+  .accounts({
+    player,
+    game: gameAddress,
+    pot: potPda,
+  })
+  .transaction();
+  
+  console.log('getting latest blockhash');
+  const { blockhash } = await connection.getLatestBlockhash().catch(err=>console.log('ttt: ' + err));
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = player;
+
+  console.log('sending transaction');
+  const txSignature = await window.xnft.solana.send(tx);
+  console.log("tx signature", txSignature);
+
+  const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
+  return getGameByAddress(gameAddress);
 }

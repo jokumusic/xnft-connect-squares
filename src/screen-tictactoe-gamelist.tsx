@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import ReactXnft from "react-xnft";
 import { Text, useNavigation, View, Image, Button, TextField,
   Table,TableRow,TableHead,
   BalancesTable, BalancesTableHead, BalancesTableRow, BalancesTableCell, BalancesTableContent,
+  usePublicKey, useConnection, useSolanaConnection,
 } from "react-xnft";
 import * as xnft from "react-xnft";
-import {useOpenGames, GameState, Game, createGame, } from "../utils/tic-tac-toe";
+import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/tic-tac-toe";
 import {tableRowStyle,tableCellStyle, buttonStyle} from "../styles";
 
 const mockGames : [Game] =[
@@ -19,13 +21,47 @@ const defaultNewGameSettings = {
   maxPlayers: 2
 };
 
+ReactXnft.events.on("connect", () => {
+  console.log('ttt: connected');
+});
+
+
 export function ScreenTicTacToeGameList() {
   const nav = useNavigation();
+  const connection = useSolanaConnection();
+  const wallet = usePublicKey();
   //const [[openGames, isLoading]] = useState<[[Game], boolean]>([mockGames,false]);
-  const [openGames, isLoading] = useOpenGames(true);
+  const [openGames, isLoading] = useOpenGames(connection, wallet, true);
+  //const [openGames, setOpenGames] = useState<[Game]>([]);
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
   const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
+  const [debugText, setDebugText] = useState("");
+/*
+  useEffect(()=>{
+    (async ()=>{
+      const games = await getOpenGames(connection, wallet)
+        .catch(err=>setDebugText(debugText + err.toString() + "\n"));
+      if(games)
+        setOpenGames(games);
+    })();
 
+  },[]);
+
+  async function viewGames() {
+    console.log('ttt: ' + JSON.stringify(window?.xnft));
+    
+    const games = await getGameAccounts()
+      .catch(err=>{
+        console.log('ttt: ' + err.toString());
+        setDebugText(debugText + err.toString() + "\n")
+      });
+  
+    console.log('ttt games: ', games);
+    if(games)
+      setOpenGames(games);
+    
+  }
+*/
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
     setNewGameSettings(defaultNewGameSettings);
@@ -33,17 +69,27 @@ export function ScreenTicTacToeGameList() {
   }
   
   async function onCreateGameClick() {
-    alert('hi');
-    console.log('creating game... ', newGameSettings);
-    const createdGame = await createGame(newGameSettings.rows, newGameSettings.cols, newGameSettings.maxPlayers, 
+    const createdGame = await createGame(connection, wallet, newGameSettings.rows, newGameSettings.cols, newGameSettings.maxPlayers, 
       newGameSettings.maxPlayers, newGameSettings.wager)
-      .catch(err=>alert(err.toString()));
+      .catch(err=>setDebugText(debugText + err.toString() + "\n"));
     
     setCreateGameFormIsVisible(false);
   }
 
+  async function onJoinGameClick(game: Game) {
+    console.log('ttt joining game:', game.address.toBase58(), ' pot: ', game.pot.toBase58());
+    const joinedGame = await joinGame(connection, wallet, game.address)
+      .catch(err=>console.log('ttt: ', err.toString()));
+
+    if(joinedGame)
+      nav.push("screen-tictactoe-game", {game: joinedGame});
+    
+  }
+
   return (
     <View>
+      <Text>{debugText}</Text>
+      {/*<Button style={buttonStyle} onClick={()=>viewGames()}>View Games</Button>*/}
       { !createGameFormIsVisible &&
       <>
       <Button style={buttonStyle} onClick={()=>onConfigureNewGameClick()}>Create Game</Button>
@@ -51,6 +97,7 @@ export function ScreenTicTacToeGameList() {
       <BalancesTable>
       <BalancesTableHead title={"Available Games To Join"}>
         <BalancesTableRow style={tableRowStyle}>
+          <BalancesTableCell title={""}/>
           <BalancesTableCell title={"Wager"} subtitle={"wager"}/>
           <BalancesTableCell title={"Layout"}/>
           <BalancesTableCell title={"Players"}/>
@@ -59,11 +106,12 @@ export function ScreenTicTacToeGameList() {
       </BalancesTableHead>
       <BalancesTableContent>
       { openGames.map((game:Game)=>(
-        <BalancesTableRow style={tableRowStyle}>
+        <BalancesTableRow style={tableRowStyle} onClick={()=>onJoinGameClick(game)}>
+          <BalancesTableCell style={tableCellStyle} title={"join"} />
           <BalancesTableCell style={tableCellStyle} title={game.wager.toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>
-          <BalancesTableCell style={tableCellStyle} title={`${game.joined_players}/${game.max_players}`}/>
-          <BalancesTableCell style={tableCellStyle} title={new Date(game.init_timestamp * 1000).toLocaleString()}/>
+          <BalancesTableCell style={tableCellStyle} title={`${game.joinedPlayers}/${game.maxPlayers}`}/>
+          <BalancesTableCell style={tableCellStyle} title={new Date(game.initTimestamp * 1000).toLocaleString()}/>          
         </BalancesTableRow>
         ))
       }        

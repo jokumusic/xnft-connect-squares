@@ -13,8 +13,13 @@ const oImgUri = "https://us.123rf.com/450wm/rondale/rondale1701/rondale170100555
 
 export function ScreenTicTacToeGame() {
   const nav = useNavigation();
+  const game = useState(nav.activeRoute.props.game);
   const [playerTurn, setPlayerTurn] = useState(0);
   const [matrix, setMatrix] = useState(Array.from({length: rows},()=> Array.from({length: cols}, () => null)));
+
+  useEffect(()=>{
+    console.log('ttt gamescreen: ', game);
+  },[]);
 
   function getCellImage(row,col) {
     const state = matrix[row][col];
