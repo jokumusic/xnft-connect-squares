@@ -64,7 +64,7 @@ async function getPotPda(gamePda: PublicKey) {
 }
 
 // @param withReload is true if we want to poll for a constant refresh.
-export function useOpenGames(connection: Connection, wallet: PublicKey, withReload = true) {
+export function useOpenGames(connection: Connection, wallet: PublicKey, withReload = true) : [[Game],boolean]{
   const [[games, isLoading], setGamesIsLoading] = useState<[[Game], boolean]>([[], true]);
 
   useEffect(() => {
@@ -78,10 +78,14 @@ export function useOpenGames(connection: Connection, wallet: PublicKey, withRelo
       }
     };
 
-    // Fetch the farmer account every 10 seconds to get state updates.
+
     fetchOpenGames();
     if (withReload) {
-      setInterval(() => fetchOpenGames(), 10 * 1000);
+      let timer = setInterval(() => fetchOpenGames(), 10 * 1000);
+      
+      return ()=> {
+        clearInterval(timer);
+      };
     }
   }, []);
 
@@ -122,7 +126,7 @@ export async function createGame(connection: Connection, creator:PublicKey, rows
 
 export async function getOpenGames(connection:Connection, wallet: PublicKey): Promise<[Game]> {
   const url = connection.rpcEndpoint;
-  const cacheKey = `${url}:OpenGames:${wallet.toString()}`;
+  const cacheKey = `${url}:OpenGames:${wallet.toBase58()}`;
   const val = await LocalStorage.get(cacheKey);
 
   //
@@ -230,4 +234,27 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
 
   const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
   return getGameByAddress(gameAddress);
+}
+
+export function subscribeToGame(gameAddress: PublicKey, fn) {
+  if(!gameAddress) {
+    //reject("gameAddress must be specified");
+    return;
+  }
+
+  const client = tictactoeClient();
+  const eventEmitter = client.account
+    .game
+    .subscribe(gameAddress, 'confirmed');
+
+    eventEmitter.addListener('change',(g)=>{
+      console.log('ttt change: ', g);
+    });
+
+    /*
+    .on('change', (g)=>{
+      console.log('ttt change: ', g);
+      //fn(g);
+    });
+    */
 }

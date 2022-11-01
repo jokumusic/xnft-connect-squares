@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Text, useNavigation, View, Image, useConnection, usePublicKey} from "react-xnft";
-import { Game, gamePlay } from "../utils/tic-tac-toe";
+import { Game, gamePlay, getGameByAddress, subscribeToGame } from "../utils/tic-tac-toe";
 
 
 const viewHeight = 500;
@@ -13,26 +13,65 @@ export function ScreenTicTacToeGame() {
   const nav = useNavigation();
   const connection = useConnection();
   const wallet = usePublicKey();
-  const [game] = useState<Game>(nav.activeRoute.props?.game);
+  const [game, setGame] = useState<Game>(nav.activeRoute.props?.game);
   const [cellsize] = useState(1/game.rows * viewHeight);
   const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
   const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
+  const [message,setMessage] = useState("");
 
+
+  useEffect(()=>{
+    //subscribeToGame(game.address, ()=>{});
+    const fetchGame = async ()=>{
+      const updatedGame = await getGameByAddress(game.address).catch(err=>console.error(err));
+      console.log('ttt updatedGame: ', updatedGame);
+      if(updatedGame){
+        setGame(updatedGame);        
+      }
+    };
+    
+    fetchGame();
+    const timer = setInterval(()=>fetchGame(), 5 * 1000);
+
+    return ()=>{
+      clearInterval(timer);
+    };
+    
+  },[]);
+
+  useEffect(()=>{
+    setMatrix(game.board);
+    if(game.state?.won) {
+      if(game.state.won?.winner?.equals(wallet)){
+        setMessage("YOU WON! Exiting game...");
+      }
+      else {
+        setMessage("YOU LOST! Exiting game...");
+      }
+
+      const exitTimer = setInterval(()=>{nav.pop(); clearInterval(exitTimer);}, 5000);
+      return ()=>{
+        clearInterval(exitTimer);
+      }
+    }
+
+  },[game]);
 
   function getCellImage(row,col) {
     const state = matrix[row][col];
     if(state === null)
       return (<></>);
 
-    return (<Image src={state ? oImgUri : xImgUri} style={{width:'90%',height:'90%', alignSelf: 'center'}}/>);
+    return (<Image key={`cellimg_${row}_${col}`} src={state ? oImgUri : xImgUri} style={{width:'90%',height:'90%', alignSelf: 'center'}}/>);
   }
 
   async function onCellClick(row: number,col:number) {
     const updatedGame = await gamePlay(connection, wallet, game.address, {row,column:col})
         .catch(err=>console.log('ttt: ', err.toString()));
       
-      if(updatedGame)
-          setMatrix(updatedGame.board);
+      if(updatedGame) {
+          setGame(updatedGame);
+      }
     /*      
     const val = matrix[row][col];
     if(val != null)
@@ -46,10 +85,11 @@ export function ScreenTicTacToeGame() {
   }
 
   function getRow(cols: number, row: number) {
-    const elements: Element[] = [];
+    const elements : [JSX.Element] = [];
     for(let col=0;col<cols;col++)
       elements.push(
-        <View 
+        <View
+          key={`cell_${row}_${col}`}
           style={{border: '1px solid red', color: 'white', width: cellsize, height: cellsize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
           onClick={()=>onCellClick(row,col)}
         >
@@ -69,14 +109,16 @@ export function ScreenTicTacToeGame() {
     return (<View style={{display: 'flex', flexDirection: 'column', alignContent: 'center', alignItems: 'center'}}>{elements}</View>);
   }
 
-  async function refreshGrid() {
 
-  }
 
   return (
     <View>
+      {message &&
+        <Text style={{color:'red'}}>{message}</Text>
+      }
+
       { 
-          getTable(game.rows,game.cols)
+        getTable(game.rows,game.cols)
       }
     </View>
   );

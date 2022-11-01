@@ -21,47 +21,23 @@ const defaultNewGameSettings = {
   maxPlayers: 2
 };
 
+/*
 ReactXnft.events.on("connect", () => {
   console.log('ttt: connected');
 });
-
+*/
 
 export function ScreenTicTacToeGameList() {
   const nav = useNavigation();
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
   //const [[openGames, isLoading]] = useState<[[Game], boolean]>([mockGames,false]);
-  const [openGames, isLoading] = useOpenGames(connection, wallet, true);
-  //const [openGames, setOpenGames] = useState<[Game]>([]);
+  const [games, isLoading] = useOpenGames(connection, wallet, true);
+  //const [games, setGames] = useState<[Game]>([]);
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
   const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
   const [debugText, setDebugText] = useState("");
-/*
-  useEffect(()=>{
-    (async ()=>{
-      const games = await getOpenGames(connection, wallet)
-        .catch(err=>setDebugText(debugText + err.toString() + "\n"));
-      if(games)
-        setOpenGames(games);
-    })();
 
-  },[]);
-
-  async function viewGames() {
-    console.log('ttt: ' + JSON.stringify(window?.xnft));
-    
-    const games = await getGameAccounts()
-      .catch(err=>{
-        console.log('ttt: ' + err.toString());
-        setDebugText(debugText + err.toString() + "\n")
-      });
-  
-    console.log('ttt games: ', games);
-    if(games)
-      setOpenGames(games);
-    
-  }
-*/
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
     setNewGameSettings(defaultNewGameSettings);
@@ -79,10 +55,10 @@ export function ScreenTicTacToeGameList() {
   async function onJoinGameClick(game: Game) {
     console.log('ttt joining game:', game.address.toBase58());
 
-    if(!(game.state?.active || game.state?.waiting)) {
+    /*if(!(game.state?.active || game.state?.waiting)) {
       console.log('ttt unable to enter game, because game state is ', game.state);
       return;
-    }
+    }*/
 
     console.log('ttt players: ', game.players);
     const isInGame = game.players.findIndex(p=>{
@@ -104,14 +80,13 @@ export function ScreenTicTacToeGameList() {
           nav.push("screen-tictactoe-game", {game: joinedGame});
     } else {
       console.log('ttt unable to join game');
-    }
-    
+    }    
   }
 
   return (
     <View>
       <Text>{debugText}</Text>
-      {/*<Button style={buttonStyle} onClick={()=>viewGames()}>View Games</Button>*/}
+      
       { !createGameFormIsVisible &&
       <>
       <Button style={buttonStyle} onClick={()=>onConfigureNewGameClick()}>Create Game</Button>
@@ -127,8 +102,9 @@ export function ScreenTicTacToeGameList() {
         </BalancesTableRow>
       </BalancesTableHead>
       <BalancesTableContent>
-      { openGames.map((game:Game)=>(
-        <BalancesTableRow 
+      { games.map((game:Game, index)=>(
+        <BalancesTableRow
+          key={"game_" + index.toString()}
           style={[tableRowStyle]}
           onClick={()=>onJoinGameClick(game)}>
           <BalancesTableCell style={tableCellStyle} title={"join"} />
