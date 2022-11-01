@@ -1,6 +1,7 @@
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState, useEffect } from "react";
 import { Text, useNavigation, View, Image, useConnection, usePublicKey} from "react-xnft";
-import { Game, gamePlay, getGameByAddress, subscribeToGame } from "../utils/tic-tac-toe";
+import { Game, gamePlay, getGameByAddress, subscribeToGame, useGame } from "../utils/tic-tac-toe";
 
 
 const viewHeight = 500;
@@ -18,6 +19,7 @@ export function ScreenTicTacToeGame() {
   const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
   const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
   const [message,setMessage] = useState("");
+  const [isMyTurn, setIsMyTurn] = useState(false);
 
 
   useEffect(()=>{
@@ -40,7 +42,9 @@ export function ScreenTicTacToeGame() {
   },[]);
 
   useEffect(()=>{
+    setIsMyTurn(wallet.equals(game.players[game.currentPlayerIndex]));
     setMatrix(game.board);
+
     if(game.state?.won) {
       if(game.state.won?.winner?.equals(wallet)){
         setMessage("YOU WON! Exiting game...");
@@ -90,7 +94,7 @@ export function ScreenTicTacToeGame() {
       elements.push(
         <View
           key={`cell_${row}_${col}`}
-          style={{border: '1px solid red', color: 'white', width: cellsize, height: cellsize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
+          style={{border: isMyTurn ? '1px solid green' : '1px solid red', color: 'white', width: cellsize, height: cellsize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
           onClick={()=>onCellClick(row,col)}
         >
           { 
@@ -116,6 +120,12 @@ export function ScreenTicTacToeGame() {
       {message &&
         <Text style={{color:'red'}}>{message}</Text>
       }
+
+      <View style={{display:'flex', flexDirection:'row'}}>
+        <Text style={{marginLeft:10}}>Wager: {Math.floor(game.wager/LAMPORTS_PER_SOL).toString()}</Text>
+        <Text style={{marginLeft:10}}>Players: {`${game.joinedPlayers}/${game.maxPlayers}`}</Text>
+        <Text style={{marginLeft:10}}>Turn: {wallet.equals(game.players[game.currentPlayerIndex]) ? 'YOURS!' : `Player ${game.currentPlayerIndex +1}`}</Text>
+      </View>
 
       { 
         getTable(game.rows,game.cols)

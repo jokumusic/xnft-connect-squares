@@ -9,7 +9,7 @@ import { Program, utils } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
 import { IDL as IDL_TIC_TAC_TOE, TicTacToe } from "./tic-tac-toe";
 
-export const PID_TIC_TAC_TOE = new PublicKey("H5k95qzHVCoKJSDCE5WLJ9kcmfSWn89sw4gWkjGY76DB");
+export const PID_TIC_TAC_TOE = new PublicKey("HY4XdrKZmvXx2PRRFHX6sQbuj1ky2RvqqxDkbMFXeELv");
 
 export const GameState = {
   waiting:{},
@@ -22,6 +22,7 @@ export interface Game {
   address: PublicKey,
   bump: number,
   creator: PublicKey,
+  nonce: number,
   state: typeof GameState,
   rows: number,
   cols: number,
@@ -43,14 +44,6 @@ export interface Tile{
   column: number,
 }
 
-async function getGamePda(wallet: PublicKey) {
-  const [gamePda, gamePdaBump] = PublicKey.findProgramAddressSync(
-    [Buffer.from("game"), wallet.toBuffer()],
-    PID_TIC_TAC_TOE
-  );
-
-  return gamePda;
-}
 
 async function getPotPda(gamePda: PublicKey) {
   const [potPda, potPdaBump] = PublicKey.findProgramAddressSync( 
@@ -92,16 +85,60 @@ export function useOpenGames(connection: Connection, wallet: PublicKey, withRelo
   return [games, isLoading];
 }
 
+export function useGame(gameAddress: PublicKey) : [Game,boolean] {
+  const [[game, isLoading], setGameIsLoading] = useState<[Game, boolean]>([{}, true]);
+  
+  useEffect(()=>{
+    //subscribeToGame(game.address, ()=>{});
+    const fetchGame = async ()=>{
+      const updatedGame = await getGameByAddress(gameAddress)
+        .catch(err=>console.error(err));
+      
+      console.log('ttt updatedGame: ', updatedGame);
+      if(updatedGame){
+        setGameIsLoading([updatedGame,false]);        
+      }
+    };
+    
+    fetchGame();
+    let timer = setInterval(()=>fetchGame(), 5 * 1000);
+
+    return ()=>{
+      clearInterval(timer);
+    };  
+  },[]);
+  
+  return [game, isLoading];
+}
+
 export function tictactoeClient(): Program<TicTacToe> {
   return new Program<TicTacToe>(IDL_TIC_TAC_TOE, PID_TIC_TAC_TOE, window.xnft);
 }
 
 export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=0.001) : Promise<Game> {
   const client = tictactoeClient();
-  const gamePda = await getGamePda(creator);
+  let gameNonce = 0;
+  let gamePda = null;
+  let gamePdaBump = null;
+
+  do {
+    gameNonce = Math.floor(Math.random() * Math.pow(2,32));
+    const [pda, bump] = PublicKey.findProgramAddressSync(
+      [Buffer.from("game"), creator.toBuffer(), new anchor.BN(gameNonce).toArrayLike(Buffer, 'be', 4)],
+      PID_TIC_TAC_TOE
+    );
+
+    const existingGame = await client.account.game.fetchNullable(pda);
+    if(!existingGame){
+      gamePda = pda;
+      gamePdaBump = bump;
+    }
+
+  } while(gamePda == null);
+
   const potPda = await getPotPda(gamePda);
   const tx = await client.methods
-  .gameInit(rows,cols, minPlayers,maxPlayers, wager)
+  .gameInit(gameNonce, rows,cols, minPlayers,maxPlayers, wager)
   .accounts({
     creator: creator,
     game: gamePda,
@@ -144,7 +181,7 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
 
 
   const newResp = await getGameAccounts([
-    //{ memcmp: { offset: 41, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
+    //{ memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
   ]);
 
 
@@ -232,7 +269,7 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
   const txSignature = await window.xnft.solana.send(tx);
   console.log("tx signature", txSignature);
 
-  const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
+  //const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
   return getGameByAddress(gameAddress);
 }
 

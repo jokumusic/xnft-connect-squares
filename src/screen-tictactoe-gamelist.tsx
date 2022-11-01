@@ -9,10 +9,7 @@ import * as xnft from "react-xnft";
 import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/tic-tac-toe";
 import {tableRowStyle,tableCellStyle, buttonStyle} from "../styles";
 
-const mockGames : [Game] =[
-{wager: 0.001, rows: 3, cols: 3, joinedPlayers: 1, initTimestamp: 1111111222, maxPlayers: 2 },
-{wager: 0.01, rows: 3, cols: 3, joinedPlayers: 1, initTimestamp: 1111111111, maxPlayers: 2 },
-];
+const LAMPORTS_PER_SOL = 1000000000;
 
 const defaultNewGameSettings = {
   wager: 0.001,
@@ -37,19 +34,42 @@ export function ScreenTicTacToeGameList() {
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
   const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
   const [debugText, setDebugText] = useState("");
+  const [createGameMessage, setCreateGameMessage] = useState("");
 
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
+    setCreateGameMessage("");
     setNewGameSettings(defaultNewGameSettings);
     setCreateGameFormIsVisible(true);
   }
   
   async function onCreateGameClick() {
+    if(newGameSettings.rows < 2) {
+      setCreateGameMessage("Rows must be greater than 2");
+      return;
+    }
+    if(newGameSettings.cols < 2) {
+      setCreateGameMessage("Columns must be greater than 2");
+      return;
+    }
+    if(newGameSettings.maxPlayers < 2) {
+      setCreateGameMessage("Max Players must be greater than 2");
+      return;
+    }
+    if(newGameSettings.wager < 0) {
+      setCreateGameMessage("Wager must be greater than or equal to 0");
+      return;
+    }
+
     const createdGame = await createGame(connection, wallet, newGameSettings.rows, newGameSettings.cols, newGameSettings.maxPlayers, 
-      newGameSettings.maxPlayers, newGameSettings.wager)
-      .catch(err=>setDebugText(debugText + err.toString() + "\n"));
-    
-    setCreateGameFormIsVisible(false);
+      newGameSettings.maxPlayers, Math.floor(newGameSettings.wager * LAMPORTS_PER_SOL))
+      .catch(err=>setCreateGameMessage(err.toString()));
+
+      if(createdGame) {
+        setCreateGameMessage("");
+        setCreateGameFormIsVisible(false);
+        nav.push("screen-tictactoe-game", {game: createdGame});
+      }
   }
 
   async function onJoinGameClick(game: Game) {
@@ -108,7 +128,7 @@ export function ScreenTicTacToeGameList() {
           style={[tableRowStyle]}
           onClick={()=>onJoinGameClick(game)}>
           <BalancesTableCell style={tableCellStyle} title={"join"} />
-          <BalancesTableCell style={tableCellStyle} title={game.wager.toString()}/>
+          <BalancesTableCell style={tableCellStyle} title={Math.floor(game.wager/LAMPORTS_PER_SOL).toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.joinedPlayers}/${game.maxPlayers}`}/>
           <BalancesTableCell style={tableCellStyle} title={new Date(game.initTimestamp * 1000).toLocaleString()}/>          
@@ -122,6 +142,7 @@ export function ScreenTicTacToeGameList() {
 
       {createGameFormIsVisible &&
       <>
+        <Text style={{color:'red'}}>{createGameMessage}</Text>
         <View>
           <Text>Wager:</Text>
           <TextField
