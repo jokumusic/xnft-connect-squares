@@ -77,29 +77,34 @@ export function ScreenTicTacToeGameList() {
   }
 
   async function onJoinGameClick(game: Game) {
-    console.log('ttt joining game:', game.address.toBase58);
+    console.log('ttt joining game:', game.address.toBase58());
 
+    if(!(game.state?.active || game.state?.waiting)) {
+      console.log('ttt unable to enter game, because game state is ', game.state);
+      return;
+    }
+
+    console.log('ttt players: ', game.players);
     const isInGame = game.players.findIndex(p=>{
-      return wallet.equals(p)
+      console.log('ttt p: ', p.toBase58());
+      return wallet.equals(p);
     });
 
-    console.log('ttt game.state: ', game.state);
-    if(isInGame && game.state?.active) {
-      console.log('ttt already an active player. Entering game...');
+    console.log('ttt isInGame: ', isInGame);
+
+    if(isInGame> -1) {
+      console.log('ttt already an active player. entering game...');      
       nav.push("screen-tictactoe-game", {game});
-    } else {
+    } 
+    else if(game.state?.waiting) {
       const joinedGame = await joinGame(connection, wallet, game.address)
         .catch(err=>console.log('ttt: ', err.toString()));
       
       if(joinedGame)
           nav.push("screen-tictactoe-game", {game: joinedGame});
+    } else {
+      console.log('ttt unable to join game');
     }
-
-
-    
-   
-
-    
     
   }
 

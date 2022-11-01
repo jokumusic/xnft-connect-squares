@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Text, useNavigation, View, Image} from "react-xnft";
+import { Text, useNavigation, View, Image, useConnection, usePublicKey} from "react-xnft";
+import { Game, gamePlay } from "../utils/tic-tac-toe";
 
 
 const viewHeight = 500;
@@ -10,10 +11,12 @@ const mockGame = {rows:5,cols:5};
 
 export function ScreenTicTacToeGame() {
   const nav = useNavigation();
-  const [game] = useState(nav.activeRoute.props?.game);
+  const connection = useConnection();
+  const wallet = usePublicKey();
+  const [game] = useState<Game>(nav.activeRoute.props?.game);
   const [cellsize] = useState(1/game.rows * viewHeight);
-  const [playerTurn, setPlayerTurn] = useState(0);
-  const [matrix, setMatrix] = useState(Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
+  const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
+  const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
 
 
   function getCellImage(row,col) {
@@ -24,7 +27,13 @@ export function ScreenTicTacToeGame() {
     return (<Image src={state ? oImgUri : xImgUri} style={{width:'90%',height:'90%', alignSelf: 'center'}}/>);
   }
 
-  function onCellClick(row,col) {
+  async function onCellClick(row: number,col:number) {
+    const updatedGame = await gamePlay(connection, wallet, game.address, {row,column:col})
+        .catch(err=>console.log('ttt: ', err.toString()));
+      
+      if(updatedGame)
+          setMatrix(updatedGame.board);
+    /*      
     const val = matrix[row][col];
     if(val != null)
       return;
@@ -33,6 +42,7 @@ export function ScreenTicTacToeGame() {
     copy[row][col] = playerTurn;
     setMatrix(copy);
     setPlayerTurn(playerTurn ? 0 : 1);
+    */
   }
 
   function getRow(cols: number, row: number) {

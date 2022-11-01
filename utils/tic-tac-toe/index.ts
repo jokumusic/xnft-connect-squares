@@ -38,6 +38,11 @@ export interface Game {
   players: [PublicKey],
 }
 
+export interface Tile{
+  row: number,
+  column: number,
+}
+
 async function getGamePda(wallet: PublicKey) {
   const [gamePda, gamePdaBump] = PublicKey.findProgramAddressSync(
     [Buffer.from("game"), wallet.toBuffer()],
@@ -186,6 +191,33 @@ export async function joinGame(connection: Connection, player:PublicKey, gameAdd
     pot: potAddress,
   })
   .transaction();
+  
+  console.log('getting latest blockhash');
+  const { blockhash } = await connection.getLatestBlockhash().catch(err=>console.log('ttt: ' + err));
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = player;
+
+  console.log('sending transaction');
+  const txSignature = await window.xnft.solana.send(tx);
+  console.log("tx signature", txSignature);
+
+  const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
+  return getGameByAddress(gameAddress);
+}
+
+export async function gamePlay(connection: Connection, player:PublicKey, gameAddress: PublicKey, tile: Tile) {
+  const client = tictactoeClient();
+  const potAddress = await getPotPda(gameAddress);
+
+  const tx = await client.methods
+    .gamePlay(tile)
+    .accounts({
+      player: player,
+      game: gameAddress,
+      pot:potAddress,
+    })
+    .transaction();
+
   
   console.log('getting latest blockhash');
   const { blockhash } = await connection.getLatestBlockhash().catch(err=>console.log('ttt: ' + err));
