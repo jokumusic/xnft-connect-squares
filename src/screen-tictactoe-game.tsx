@@ -171,7 +171,7 @@ export function ScreenTicTacToeGame() {
   }
   
   function getTable(rows: number, cols: number) {
-    const elements = [];
+    const elements : [JSX.Element] = [];
     for(let row=0;row<rows; row++)
       elements.push(getRow(cols,row));
   
@@ -187,7 +187,7 @@ export function ScreenTicTacToeGame() {
       }
 
       <View style={{display:'flex', flexDirection:'row'}}>
-        <Text style={{marginLeft:10}}>Wager: {(game.wager/LAMPORTS_PER_SOL).toFixed(3).toString()}</Text>
+        <Text style={{marginLeft:10}}>Pot: {(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3).toString()}</Text>
         <Text style={{marginLeft:10}}>Players: {`${game.joinedPlayers}/${game.maxPlayers}`}</Text>
         <Text style={{marginLeft:10}}>Turn: {wallet.equals(game.players[playerTurn]) ? 'YOURS!' : `Player ${playerTurn +1}`}</Text>
         <Text style={{marginLeft:10, marginRight:5}}>Timer:</Text>

@@ -115,7 +115,7 @@ export function tictactoeClient(): Program<TicTacToe> {
   return new Program<TicTacToe>(IDL_TIC_TAC_TOE, PID_TIC_TAC_TOE, window.xnft);
 }
 
-export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=0.001) : Promise<Game> {
+export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=1000000) : Promise<Game> {
   const client = tictactoeClient();
   let gameNonce = 0;
   let gamePda = null;
@@ -137,6 +137,7 @@ export async function createGame(connection: Connection, creator:PublicKey, rows
   } while(gamePda == null);
 
   const potPda = await getPotPda(gamePda);
+
   const tx = await client.methods
   .gameInit(gameNonce, rows,cols, minPlayers,maxPlayers, wager)
   .accounts({

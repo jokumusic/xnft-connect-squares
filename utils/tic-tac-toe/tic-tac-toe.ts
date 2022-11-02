@@ -70,6 +70,11 @@ export type TicTacToe = {
           "name": "player",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -326,6 +331,11 @@ export type TicTacToe = {
       "code": 6013,
       "name": "MaximumPlayersMustBeGreaterThanOrEqualToMiniumPlayers",
       "msg": "maximum players must be greater than or equal to minimum players"
+    },
+    {
+      "code": 6014,
+      "name": "FailedToTransferFunds",
+      "msg": "failed to transfer funds"
     }
   ]
 };
@@ -402,6 +412,11 @@ export const IDL: TicTacToe = {
           "name": "player",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -658,6 +673,11 @@ export const IDL: TicTacToe = {
       "code": 6013,
       "name": "MaximumPlayersMustBeGreaterThanOrEqualToMiniumPlayers",
       "msg": "maximum players must be greater than or equal to minimum players"
+    },
+    {
+      "code": 6014,
+      "name": "FailedToTransferFunds",
+      "msg": "failed to transfer funds"
     }
   ]
 };
