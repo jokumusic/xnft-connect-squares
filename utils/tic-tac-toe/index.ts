@@ -180,10 +180,22 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
   }
 
 
-  const newResp = await getGameAccounts([
-    //{ memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
+  const waitingGamesPromise = getGameAccounts([
+    { memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
   ]);
 
+  const activeGamesPromise = getGameAccounts([
+    { memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([1])) }},
+  ]);
+
+  const queriedGames = await Promise.all([waitingGamesPromise, activeGamesPromise]).catch(err=>console.log(err));
+  const activeGames = queriedGames[1] as [Game];
+  const currentWalletActiveGames = activeGames.filter(g=>g.players.findIndex(p=>wallet.equals(p)) >= 0);
+
+  const newResp = [
+    ...currentWalletActiveGames.sort((a,b)=>{return a.initTimestamp - b.initTimestamp}),
+    ...queriedGames[0].sort((a,b)=>{ return a.initTimestamp - b.initTimestamp})
+  ];
 
   LocalStorage.set(
     cacheKey,
@@ -206,8 +218,11 @@ export async function getGameAccounts(filters?: Buffer | web3.GetProgramAccounts
         return;
 
       const gameObjects = games.map(g=>{
-        return {...g.account, address: new PublicKey(g.publicKey)};
-      });
+        return {...g.account,
+          address: new PublicKey(g.publicKey),
+          lastMoveSlot: g.account.lastMoveSlot.toNumber(),
+          initTimestamp: g.account.initTimestamp.toNumber()};
+        });
 
       resolve(gameObjects);
   });
@@ -215,8 +230,11 @@ export async function getGameAccounts(filters?: Buffer | web3.GetProgramAccounts
 
 export async function getGameByAddress(gameAddress: PublicKey) {
   const client = tictactoeClient();
-  let game = await client.account.game.fetch(gameAddress);
-  return {...game, address: gameAddress} as Game;
+  let game = await client.account.game.fetch(gameAddress, 'confirmed');
+  return {...game,
+    address: gameAddress,
+    lastMoveSlot: game.lastMoveSlot.toNumber(),
+    initTimestamp: game.initTimestamp.toNumber()} as Game;
 }
 
 export async function joinGame(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
@@ -267,7 +285,7 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
 
   console.log('sending transaction');
   const txSignature = await window.xnft.solana.send(tx);
-  console.log("tx signature", txSignature);
+  console.log("ttt gamePlay tx signature", txSignature);
 
   //const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
   return getGameByAddress(gameAddress);

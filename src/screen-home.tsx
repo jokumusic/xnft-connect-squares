@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Text, useNavigation, View } from "react-xnft";
-import { buttonStyle } from "../styles";
+import { Text, useNavigation, View, Image } from "react-xnft";
+import { gameTileStyle } from "../styles";
 
 
 export function ScreenHome() {
@@ -11,21 +11,13 @@ export function ScreenHome() {
   return (
     <View>
       <View
-        style={buttonStyle}
+        style={gameTileStyle}
         onClick={() => {
           nav.push("screen-tictactoe-gamelist", {});
         }}
       >
-       Tic-Tac-Toe
-      </View>
-
-      <View
-        style={buttonStyle}
-        onClick={() => {
-          nav.push("screen-tictactoe-game", {});
-        }}
-      >
-        Demo
+       Grid Wars
+       <Image src={"https://i.stack.imgur.com/eLJZO.gif"} style={{width:100,height:100}}/>
       </View>
     </View>
   );

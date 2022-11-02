@@ -13,7 +13,7 @@ const LAMPORTS_PER_SOL = 1000000000;
 
 const defaultNewGameSettings = {
   wager: 0.001,
-  rows: 3,
+  rows: 5,
   cols: 3,
   maxPlayers: 2
 };
@@ -23,6 +23,7 @@ ReactXnft.events.on("connect", () => {
   console.log('ttt: connected');
 });
 */
+const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
 
 export function ScreenTicTacToeGameList() {
   const nav = useNavigation();
@@ -32,37 +33,48 @@ export function ScreenTicTacToeGameList() {
   const [games, isLoading] = useOpenGames(connection, wallet, true);
   //const [games, setGames] = useState<[Game]>([]);
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
-  const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
+  //const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
+  const [newGameWager, setNewGameWager] = useState(defaultNewGameSettings.wager);
+  const [newGameRows, setNewGameRows] = useState(defaultNewGameSettings.rows);
+  const [newGameCols, setNewGameCols] = useState(defaultNewGameSettings.cols);
+  const [newGameMaxPlayers, setNewGameMaxPlayers] = useState(defaultNewGameSettings.maxPlayers);  
   const [debugText, setDebugText] = useState("");
   const [createGameMessage, setCreateGameMessage] = useState("");
+  const [showLoadingImage, setShowLoadingImage] = useState(false);
+
 
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
     setCreateGameMessage("");
-    setNewGameSettings(defaultNewGameSettings);
+    setNewGameCols(defaultNewGameSettings.cols);
+    setNewGameRows(defaultNewGameSettings.cols);
+    setNewGameWager(defaultNewGameSettings.wager);
+    setNewGameMaxPlayers(defaultNewGameSettings.maxPlayers);
+    //setNewGameSettings(defaultNewGameSettings);
     setCreateGameFormIsVisible(true);
   }
   
   async function onCreateGameClick() {
-    if(newGameSettings.rows < 2) {
+    if(newGameRows < 2) {
       setCreateGameMessage("Rows must be greater than 2");
       return;
     }
-    if(newGameSettings.cols < 2) {
+    if(newGameCols < 2) {
       setCreateGameMessage("Columns must be greater than 2");
       return;
     }
-    if(newGameSettings.maxPlayers < 2) {
+    if(newGameMaxPlayers < 2) {
       setCreateGameMessage("Max Players must be greater than 2");
       return;
     }
-    if(newGameSettings.wager < 0) {
+    if(newGameWager < 0) {
       setCreateGameMessage("Wager must be greater than or equal to 0");
       return;
     }
 
-    const createdGame = await createGame(connection, wallet, newGameSettings.rows, newGameSettings.cols, newGameSettings.maxPlayers, 
-      newGameSettings.maxPlayers, Math.floor(newGameSettings.wager * LAMPORTS_PER_SOL))
+    setShowLoadingImage(true);
+    const createdGame = await createGame(connection, wallet, newGameRows, newGameCols, newGameMaxPlayers, 
+      newGameMaxPlayers, Math.floor(newGameWager * LAMPORTS_PER_SOL))
       .catch(err=>setCreateGameMessage(err.toString()));
 
       if(createdGame) {
@@ -70,10 +82,13 @@ export function ScreenTicTacToeGameList() {
         setCreateGameFormIsVisible(false);
         nav.push("screen-tictactoe-game", {game: createdGame});
       }
+
+    setShowLoadingImage(false);
   }
 
   async function onJoinGameClick(game: Game) {
     console.log('ttt joining game:', game.address.toBase58());
+    setShowLoadingImage(true);
 
     /*if(!(game.state?.active || game.state?.waiting)) {
       console.log('ttt unable to enter game, because game state is ', game.state);
@@ -100,11 +115,13 @@ export function ScreenTicTacToeGameList() {
           nav.push("screen-tictactoe-game", {game: joinedGame});
     } else {
       console.log('ttt unable to join game');
-    }    
+    }  
+    
+    setShowLoadingImage(false);
   }
 
   return (
-    <View>
+    <View style={{display:'flex', flexDirection:'column'}}>
       <Text>{debugText}</Text>
       
       { !createGameFormIsVisible &&
@@ -114,7 +131,6 @@ export function ScreenTicTacToeGameList() {
       <BalancesTable>
       <BalancesTableHead title={"Available Games To Join"}>
         <BalancesTableRow style={tableRowStyle}>
-          <BalancesTableCell title={""}/>
           <BalancesTableCell title={"Wager"} subtitle={"wager"}/>
           <BalancesTableCell title={"Layout"}/>
           <BalancesTableCell title={"Players"}/>
@@ -127,11 +143,10 @@ export function ScreenTicTacToeGameList() {
           key={"game_" + index.toString()}
           style={[tableRowStyle]}
           onClick={()=>onJoinGameClick(game)}>
-          <BalancesTableCell style={tableCellStyle} title={"join"} />
-          <BalancesTableCell style={tableCellStyle} title={Math.floor(game.wager/LAMPORTS_PER_SOL).toString()}/>
+          <BalancesTableCell style={tableCellStyle} title={(game.wager/LAMPORTS_PER_SOL).toFixed(3).toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.joinedPlayers}/${game.maxPlayers}`}/>
-          <BalancesTableCell style={tableCellStyle} title={new Date(game.initTimestamp * 1000).toLocaleString()}/>          
+          <BalancesTableCell style={tableCellStyle} title={new Date(game.initTimestamp * 1000).toLocaleString()}/>
         </BalancesTableRow>
         ))
       }        
@@ -146,36 +161,46 @@ export function ScreenTicTacToeGameList() {
         <View>
           <Text>Wager:</Text>
           <TextField
-            value={newGameSettings?.wager?.toString()}
-            onChange={(e) => setNewGameSettings({...newGameSettings, wager: e.target.value})}            
+            value={newGameWager.toString()}
+            onChange={(e) => setNewGameWager(e.target.value)}
             placeholder={"enter amount to wager"}/>
         </View>
         <View>
           <Text>Rows:</Text>
           <TextField
-            value={newGameSettings?.rows?.toString()}
-            onChange={(e) => setNewGameSettings({...newGameSettings, rows: e.target.value})}            
+            value={newGameRows?.toString()}
+            onChange={(e) => setNewGameRows(e.target.value)}            
             placeholder={"enter number of grid rows"}/>
         </View>
         <View>
           <Text>Columns:</Text>
           <TextField
-            value={newGameSettings?.cols?.toString()}
-            onChange={(e) => setNewGameSettings({...newGameSettings, cols: e.target.value})}            
-            placeholder={"enter number of grid cols"}/>
+            value={newGameCols?.toString()}
+            onChange={(e) => setNewGameCols(e.target.value)}            
+            placeholder={"enter number of grid columns"}/>
         </View>
+        {/*
         <View>
           <Text>Players:</Text>
           <TextField
-            value={newGameSettings?.maxPlayers?.toString()}
-            onChange={(e) => setNewGameSettings({...newGameSettings, maxPlayers: e.target.value})}            
+            value={newGameMaxPlayers.toString()}            
+            onChange={(e) => setNewGameMaxPlayers(e.target.value)}            
             placeholder={"enter number of players"}/>
         </View>
+      */}
         <View style={{display:'flex', flexDirection:'row', alignContent:'center'}}>
-          <Button style={buttonStyle} onClick={()=>onCreateGameClick()}>Submit</Button>
-          <Button style={buttonStyle} onClick={()=>setCreateGameFormIsVisible(false)}>Cancel</Button>
+          { showLoadingImage ||
+          <>
+            <Button style={buttonStyle} onClick={()=>onCreateGameClick()}>Submit</Button>
+            <Button style={buttonStyle} onClick={()=>setCreateGameFormIsVisible(false)}>Cancel</Button>
+          </>
+          }          
         </View>
       </>
+      }
+
+      { showLoadingImage &&
+        <Image src={loadingImageUri} style={{position: 'absolute', alignSelf: 'center',  bottom: '-5%'}}/>
       }
     
     </View>
