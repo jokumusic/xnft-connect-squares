@@ -5,7 +5,7 @@ import { Game, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from
 
 
 const viewHeight = 500;
-const xImgUri = "https://media.istockphoto.com/vectors/dirty-grunge-hand-drawn-with-brush-strokes-cross-x-vector-isolated-vector-id1201202836?k=20&m=1201202836&s=612x612&w=0&h=0ib7KQaJXonfKN0-tGNaMUIw2Hre9sJjd4hTsc3QwBc=";
+const xImgUri = "https://pngshare.com/wp-content/uploads/2021/06/Red-X-Black-Background-9.png";
 const oImgUri = "https://us.123rf.com/450wm/rondale/rondale1701/rondale170100555/69948558-fire-letter-o-of-burning-blue-flame-flaming-burn-font-or-bonfire-alphabet-text-with-sizzling-smoke-a.jpg?ver=6";
 const loadingCellUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
 
@@ -23,7 +23,8 @@ export function ScreenTicTacToeGame() {
   const [message,setMessage] = useState("");
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [loadingCell, setLoadingCell] = useState<Tile|null>();
-  const [turnSlotsRemaining, setTurnSlotRemaining] = useState(SLOTS_PER_TURN);
+  //const [turnSlotsRemaining, setTurnSlotRemaining] = useState(SLOTS_PER_TURN);
+  const [turnSlotRemainingPercentage, setTurnSlotRemainingPercentage] = useState(100);
 
   useEffect(()=>{
     //subscribeToGame(game.address, ()=>{});
@@ -65,10 +66,10 @@ export function ScreenTicTacToeGame() {
 
       if(game.state?.won) {
         if(game.state.won?.winner?.equals(wallet)){
-          setMessage("YOU WON! Exiting game...");
+          setMessage("YOU WON!");
         }
         else {
-          setMessage("YOU LOST! Exiting game...");
+          setMessage("YOU LOST!");
         }
 
         //const exitTimer = setInterval(()=>{nav.pop(); clearInterval(exitTimer);}, 5000);
@@ -79,14 +80,18 @@ export function ScreenTicTacToeGame() {
         const currentSlot = await connection.getSlot();
         const currentPlayerIndex = calculateCurrentPlayerIndex(currentSlot);
       
-        if(currentPlayerIndex != playerTurn){
-          setPlayerTurn(currentPlayerIndex);
-          setIsMyTurn(wallet.equals(game.players[currentPlayerIndex]));
-          setTurnSlotRemaining(SLOTS_PER_TURN);
+        if(currentPlayerIndex != playerTurn){          
+          //setTurnSlotRemaining(SLOTS_PER_TURN);
+          setTurnSlotRemainingPercentage(100);
         } else {        
           const slotDiff = (currentSlot - game.lastMoveSlot);
-          setTurnSlotRemaining(slotDiff <= SLOTS_PER_TURN ? SLOTS_PER_TURN - slotDiff : SLOTS_PER_TURN - (slotDiff % SLOTS_PER_TURN));
+          const slotsRemaining = slotDiff <= SLOTS_PER_TURN ? SLOTS_PER_TURN - slotDiff : SLOTS_PER_TURN - (slotDiff % SLOTS_PER_TURN);
+          //setTurnSlotRemaining();
+          setTurnSlotRemainingPercentage(slotsRemaining/SLOTS_PER_TURN * 100);
         }
+
+        setPlayerTurn(currentPlayerIndex);
+        setIsMyTurn(wallet.equals(game.players[currentPlayerIndex]));
       }
     };
 
@@ -115,7 +120,7 @@ export function ScreenTicTacToeGame() {
     if(isLoadingCell)
       setLoadingCell(null);
 
-    return (<Image key={`cellimg_${row}_${col}`} src={state ? oImgUri : xImgUri} style={{width:'90%',height:'90%', alignSelf: 'center'}}/>);
+    return (<Image key={`cellimg_${row}_${col}`} src={state ? oImgUri : xImgUri} style={{ width:'90%',height:'90%', alignSelf: 'center'}}/>);
   }
 
   async function onCellClick(row: number,col:number) {
@@ -154,7 +159,7 @@ export function ScreenTicTacToeGame() {
       elements.push(
         <View
           key={`cell_${row}_${col}`}
-          style={{border: isMyTurn ? '1px solid green' : '1px solid red', color: 'white', width: cellsize, height: cellsize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
+          style={{display:'flex', border: isMyTurn ? '1px solid green' : '1px solid red', color: 'white', width: cellsize, height: cellsize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
           onClick={()=>onCellClick(row,col)}
         >
           { 
@@ -185,7 +190,10 @@ export function ScreenTicTacToeGame() {
         <Text style={{marginLeft:10}}>Wager: {(game.wager/LAMPORTS_PER_SOL).toFixed(3).toString()}</Text>
         <Text style={{marginLeft:10}}>Players: {`${game.joinedPlayers}/${game.maxPlayers}`}</Text>
         <Text style={{marginLeft:10}}>Turn: {wallet.equals(game.players[playerTurn]) ? 'YOURS!' : `Player ${playerTurn +1}`}</Text>
-        <Text style={{marginLeft:10}}>Timer: {Math.ceil(turnSlotsRemaining / 2).toString()}</Text>
+        <Text style={{marginLeft:10, marginRight:5}}>Timer:</Text>
+        <View style={{display:'flex', width:50, borderColor: 'green', backgroundColor: 'transparent', borderWidth:1, }}>
+          <View style={{display:'flex', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', height:'50%', width: `${turnSlotRemainingPercentage}%`}}/>
+        </View>
       </View>
       
       { 
