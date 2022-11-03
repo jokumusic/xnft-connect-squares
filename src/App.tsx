@@ -9,7 +9,7 @@ export function App() {
   return (
     <View style={{ background: "black", height: "100%" }}>
       <Stack.Navigator
-        initialRoute={{ name: "screen-home" }}
+        initialRoute={{ name: "screen-tictactoe-gamelist" }}
         style={{
           display: "flex",
           justifyContent: "flex-start",

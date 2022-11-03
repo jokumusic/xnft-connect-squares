@@ -15,6 +15,7 @@ const defaultNewGameSettings = {
   wager: 0.001,
   rows: 5,
   cols: 3,
+  connect: 3,
   maxPlayers: 2
 };
 
@@ -37,6 +38,7 @@ export function ScreenTicTacToeGameList() {
   const [newGameWager, setNewGameWager] = useState(defaultNewGameSettings.wager);
   const [newGameRows, setNewGameRows] = useState(defaultNewGameSettings.rows);
   const [newGameCols, setNewGameCols] = useState(defaultNewGameSettings.cols);
+  const [newGameConnect, setNewGameConnect] = useState(defaultNewGameSettings.connect);
   const [newGameMaxPlayers, setNewGameMaxPlayers] = useState(defaultNewGameSettings.maxPlayers);  
   const [debugText, setDebugText] = useState("");
   const [createGameMessage, setCreateGameMessage] = useState("");
@@ -71,9 +73,21 @@ export function ScreenTicTacToeGameList() {
       setCreateGameMessage("Wager must be greater than or equal to 0");
       return;
     }
+    if(newGameConnect < 3) {
+      setCreateGameMessage("Connections to win must be greater than 2");
+      return;
+    }
+    if(newGameConnect > newGameRows) {
+      setCreateGameMessage("Connections to win cannot be greater than grid rows");
+      return;
+    }
+    if(newGameConnect > newGameCols) {
+      setCreateGameMessage("Connections to win cannot be greater than grid columns");
+      return;
+    }
 
     setShowLoadingImage(true);
-    const createdGame = await createGame(connection, wallet, newGameRows, newGameCols, newGameMaxPlayers, 
+    const createdGame = await createGame(connection, wallet, newGameRows, newGameCols, newGameConnect, newGameMaxPlayers, 
       newGameMaxPlayers, Math.floor(newGameWager * LAMPORTS_PER_SOL))
       .catch(err=>setCreateGameMessage(err.toString()));
 
@@ -131,9 +145,9 @@ export function ScreenTicTacToeGameList() {
       <BalancesTable>
       <BalancesTableHead title={"Available Games To Join"}>
         <BalancesTableRow style={tableRowStyle}>
-          <BalancesTableCell title={"Wager"} subtitle={"wager"}/>
+          <BalancesTableCell title={"Wager"}/>
           <BalancesTableCell title={"Layout"}/>
-          <BalancesTableCell title={"Players"}/>
+          <BalancesTableCell title={"Connect"}/>
           <BalancesTableCell title={"Created"}/>
         </BalancesTableRow>
       </BalancesTableHead>
@@ -145,7 +159,7 @@ export function ScreenTicTacToeGameList() {
           onClick={()=>onJoinGameClick(game)}>
           <BalancesTableCell style={tableCellStyle} title={(game.wager/LAMPORTS_PER_SOL).toFixed(3).toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>
-          <BalancesTableCell style={tableCellStyle} title={`${game.joinedPlayers}/${game.maxPlayers}`}/>
+          <BalancesTableCell style={tableCellStyle} title={game.connect.toString()}/>
           <BalancesTableCell style={tableCellStyle} title={new Date(game.initTimestamp * 1000).toLocaleString()}/>
         </BalancesTableRow>
         ))
@@ -179,15 +193,15 @@ export function ScreenTicTacToeGameList() {
             onChange={(e) => setNewGameCols(e.target.value)}            
             placeholder={"enter number of grid columns"}/>
         </View>
-        {/*
+        
         <View>
-          <Text>Players:</Text>
+          <Text>Connections To Win:</Text>
           <TextField
-            value={newGameMaxPlayers.toString()}            
-            onChange={(e) => setNewGameMaxPlayers(e.target.value)}            
-            placeholder={"enter number of players"}/>
+            value={newGameConnect.toString()}            
+            onChange={(e) => setNewGameConnect(e.target.value)}            
+            placeholder={"number of connections to win"}/>
         </View>
-      */}
+      
         <View style={{display:'flex', flexDirection:'row', alignContent:'center'}}>
           { showLoadingImage ||
           <>

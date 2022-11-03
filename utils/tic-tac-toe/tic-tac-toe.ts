@@ -40,6 +40,10 @@ export type TicTacToe = {
           "type": "u8"
         },
         {
+          "name": "connect",
+          "type": "u8"
+        },
+        {
           "name": "minPlayers",
           "type": "u8"
         },
@@ -143,6 +147,10 @@ export type TicTacToe = {
           },
           {
             "name": "cols",
+            "type": "u8"
+          },
+          {
+            "name": "connect",
             "type": "u8"
           },
           {
@@ -336,6 +344,26 @@ export type TicTacToe = {
       "code": 6014,
       "name": "FailedToTransferFunds",
       "msg": "failed to transfer funds"
+    },
+    {
+      "code": 6015,
+      "name": "TooManyPlayersSpecified",
+      "msg": "too many players specified"
+    },
+    {
+      "code": 6016,
+      "name": "ConnectMinimumNotMet",
+      "msg": "connect minimum not met"
+    },
+    {
+      "code": 6017,
+      "name": "ConnectIsGreaterThanNumberOfRows",
+      "msg": "connect cannot be greater than the number of rows"
+    },
+    {
+      "code": 6018,
+      "name": "ConnectIsGreaterThanNumberOfColumns",
+      "msg": "connect cannot be greater than the number of columns"
     }
   ]
 };
@@ -382,6 +410,10 @@ export const IDL: TicTacToe = {
           "type": "u8"
         },
         {
+          "name": "connect",
+          "type": "u8"
+        },
+        {
           "name": "minPlayers",
           "type": "u8"
         },
@@ -485,6 +517,10 @@ export const IDL: TicTacToe = {
           },
           {
             "name": "cols",
+            "type": "u8"
+          },
+          {
+            "name": "connect",
             "type": "u8"
           },
           {
@@ -678,6 +714,26 @@ export const IDL: TicTacToe = {
       "code": 6014,
       "name": "FailedToTransferFunds",
       "msg": "failed to transfer funds"
+    },
+    {
+      "code": 6015,
+      "name": "TooManyPlayersSpecified",
+      "msg": "too many players specified"
+    },
+    {
+      "code": 6016,
+      "name": "ConnectMinimumNotMet",
+      "msg": "connect minimum not met"
+    },
+    {
+      "code": 6017,
+      "name": "ConnectIsGreaterThanNumberOfRows",
+      "msg": "connect cannot be greater than the number of rows"
+    },
+    {
+      "code": 6018,
+      "name": "ConnectIsGreaterThanNumberOfColumns",
+      "msg": "connect cannot be greater than the number of columns"
     }
   ]
 };

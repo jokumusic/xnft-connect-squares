@@ -25,6 +25,7 @@ export function ScreenTicTacToeGame() {
   const [loadingCell, setLoadingCell] = useState<Tile|null>();
   //const [turnSlotsRemaining, setTurnSlotRemaining] = useState(SLOTS_PER_TURN);
   const [turnSlotRemainingPercentage, setTurnSlotRemainingPercentage] = useState(100);
+  const [currentPlayerImgUri, setCurrentPlayerImgUri] = useState(xImgUri);
 
   useEffect(()=>{
     //subscribeToGame(game.address, ()=>{});
@@ -80,18 +81,20 @@ export function ScreenTicTacToeGame() {
         const currentSlot = await connection.getSlot();
         const currentPlayerIndex = calculateCurrentPlayerIndex(currentSlot);
       
-        if(currentPlayerIndex != playerTurn){          
+        if(currentPlayerIndex != playerTurn){
           //setTurnSlotRemaining(SLOTS_PER_TURN);
           setTurnSlotRemainingPercentage(100);
-        } else {        
+        } else {
           const slotDiff = (currentSlot - game.lastMoveSlot);
           const slotsRemaining = slotDiff <= SLOTS_PER_TURN ? SLOTS_PER_TURN - slotDiff : SLOTS_PER_TURN - (slotDiff % SLOTS_PER_TURN);
           //setTurnSlotRemaining();
           setTurnSlotRemainingPercentage(slotsRemaining/SLOTS_PER_TURN * 100);
         }
 
+        const walletMatchesCurrentPlayer = wallet.equals(game.players[currentPlayerIndex]);
         setPlayerTurn(currentPlayerIndex);
-        setIsMyTurn(wallet.equals(game.players[currentPlayerIndex]));
+        setIsMyTurn(walletMatchesCurrentPlayer);
+        setCurrentPlayerImgUri(currentPlayerIndex ? oImgUri : xImgUri);
       }
     };
 
@@ -183,14 +186,15 @@ export function ScreenTicTacToeGame() {
     <View>
       
       {message &&
-        <Text style={{color:'red'}}>{message}</Text>
+        <Text style={{color:'red', marginLeft:20}}>{message}</Text>
       }
 
       <View style={{display:'flex', flexDirection:'row'}}>
         <Text style={{marginLeft:10}}>Pot: {(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3).toString()}</Text>
-        <Text style={{marginLeft:10}}>Players: {`${game.joinedPlayers}/${game.maxPlayers}`}</Text>
-        <Text style={{marginLeft:10}}>Turn: {wallet.equals(game.players[playerTurn]) ? 'YOURS!' : `Player ${playerTurn +1}`}</Text>
-        <Text style={{marginLeft:10, marginRight:5}}>Timer:</Text>
+        <Text style={{marginLeft:15}}>Connect: {game.connect.toString()}</Text>
+        <Text style={{marginLeft:15}}>Turn: {isMyTurn ? 'YOURS! ' : 'Player '}</Text><Image src={currentPlayerImgUri} style={{marginLeft:3, width:23,height:23}}/>
+        
+        <Text style={{marginLeft:15, marginRight:5}}>Timer:</Text>
         <View style={{display:'flex', width:50, borderColor: 'green', backgroundColor: 'transparent', borderWidth:1, }}>
           <View style={{display:'flex', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', height:'50%', width: `${turnSlotRemainingPercentage}%`}}/>
         </View>

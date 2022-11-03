@@ -9,7 +9,7 @@ import { Program, utils } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
 import { IDL as IDL_TIC_TAC_TOE, TicTacToe } from "./tic-tac-toe";
 
-export const PID_TIC_TAC_TOE = new PublicKey("HY4XdrKZmvXx2PRRFHX6sQbuj1ky2RvqqxDkbMFXeELv");
+export const PID_TIC_TAC_TOE = new PublicKey("Fd8xjFh4Nk2RCR9zrvxJncDBfZo9ypqwFoiGnnX7YVC8");
 
 export const GameState = {
   waiting:{},
@@ -26,6 +26,7 @@ export interface Game {
   state: typeof GameState,
   rows: number,
   cols: number,
+  connect: number,
   minPlayers: number,
   maxPlayers: number,
   moves: number,
@@ -115,7 +116,7 @@ export function tictactoeClient(): Program<TicTacToe> {
   return new Program<TicTacToe>(IDL_TIC_TAC_TOE, PID_TIC_TAC_TOE, window.xnft);
 }
 
-export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,minPlayers=2,maxPlayers=2,wager=1000000) : Promise<Game> {
+export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,connect=3,minPlayers=2,maxPlayers=2,wager=1000000) : Promise<Game> {
   const client = tictactoeClient();
   let gameNonce = 0;
   let gamePda = null;
@@ -139,7 +140,7 @@ export async function createGame(connection: Connection, creator:PublicKey, rows
   const potPda = await getPotPda(gamePda);
 
   const tx = await client.methods
-  .gameInit(gameNonce, rows,cols, minPlayers,maxPlayers, wager)
+  .gameInit(gameNonce, rows, cols, connect, minPlayers,maxPlayers, wager)
   .accounts({
     creator: creator,
     game: gamePda,
