@@ -1,7 +1,7 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState, useEffect } from "react";
 import { Text, useNavigation, View, Image, useConnection, usePublicKey, Button} from "react-xnft";
-import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/tic-tac-toe";
+import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/connect-squares";
 import { buttonStyle } from "../styles";
 
 
@@ -14,7 +14,7 @@ const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loadin
 const mockGame = {rows:5,cols:5};
 const SLOTS_PER_TURN = 240;
 
-export function ScreenTicTacToeGame() {
+export function ScreenConnectSquaresGame() {
   const nav = useNavigation();
   const connection = useConnection();
   const wallet = usePublicKey();

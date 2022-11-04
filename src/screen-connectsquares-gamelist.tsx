@@ -6,7 +6,7 @@ import { Text, useNavigation, View, Image, Button, TextField,
   usePublicKey, useConnection, useSolanaConnection,
 } from "react-xnft";
 import * as xnft from "react-xnft";
-import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/tic-tac-toe";
+import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/connect-squares";
 import {tableRowStyle,tableCellStyle, buttonStyle} from "../styles";
 
 const LAMPORTS_PER_SOL = 1000000000;
@@ -26,7 +26,7 @@ ReactXnft.events.on("connect", () => {
 */
 const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
 
-export function ScreenTicTacToeGameList() {
+export function ScreenConnectSquaresGameList() {
   const nav = useNavigation();
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
@@ -94,7 +94,7 @@ export function ScreenTicTacToeGameList() {
       if(createdGame) {
         setCreateGameMessage("");
         setCreateGameFormIsVisible(false);
-        nav.push("screen-tictactoe-game", {game: createdGame});
+        nav.push("screen-connectsquares-game", {game: createdGame});
       }
 
     setShowLoadingImage(false);
@@ -116,14 +116,14 @@ export function ScreenTicTacToeGameList() {
 
     if(isInGame> -1) {
       console.log('ttt already an active player. entering game...');      
-      nav.push("screen-tictactoe-game", {game});
+      nav.push("screen-connectsquares-game", {game});
     } 
     else if(game.state?.waiting) {
       const joinedGame = await joinGame(connection, wallet, game.address)
         .catch(err=>console.log('ttt: ', err.toString()));
       
       if(joinedGame)
-        nav.push("screen-tictactoe-game", {game: joinedGame});
+        nav.push("screen-connectsquares-game", {game: joinedGame});
     } else {
         console.log('ttt unable to join game');
     }  

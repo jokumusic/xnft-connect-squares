@@ -7,9 +7,9 @@ import { PublicKey, Connection } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
 import { Program, utils } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
-import { IDL as IDL_TIC_TAC_TOE, TicTacToe } from "./tic-tac-toe";
+import { IDL as IDL_CONNECT_SQUARES, ConnectSquares } from "./connect-squares";
 
-export const PID_TIC_TAC_TOE = new PublicKey("Fd8xjFh4Nk2RCR9zrvxJncDBfZo9ypqwFoiGnnX7YVC8");
+export const PID_CONNECT_SQUARES = new PublicKey("v8n2qgpkyp3yXh1sJ6YKkSs12XDBqLvn3HbTvCKMmz3");
 
 export const GameState = {
   waiting:{},
@@ -50,7 +50,7 @@ export interface Tile{
 async function getPotPda(gamePda: PublicKey) {
   const [potPda, potPdaBump] = PublicKey.findProgramAddressSync( 
     [Buffer.from("pot"), gamePda.toBuffer()],
-    PID_TIC_TAC_TOE
+    PID_CONNECT_SQUARES
   );
 
   return potPda;
@@ -111,12 +111,12 @@ export function useGame(gameAddress: PublicKey) : [Game,boolean] {
   return [game, isLoading];
 }
 
-export function tictactoeClient(): Program<TicTacToe> {
-  return new Program<TicTacToe>(IDL_TIC_TAC_TOE, PID_TIC_TAC_TOE, window.xnft);
+export function connectsquaresClient(): Program<ConnectSquares> {
+  return new Program<ConnectSquares>(IDL_CONNECT_SQUARES, PID_CONNECT_SQUARES, window.xnft);
 }
 
 export async function createGame(connection: Connection, creator:PublicKey, rows=3,cols=3,connect=3,minPlayers=2,maxPlayers=2,wager=1000000) : Promise<Game> {
-  const client = tictactoeClient();
+  const client = connectsquaresClient();
   let gameNonce = 0;
   let gamePda = null;
   let gamePdaBump = null;
@@ -125,7 +125,7 @@ export async function createGame(connection: Connection, creator:PublicKey, rows
     gameNonce = Math.floor(Math.random() * Math.pow(2,32));
     const [pda, bump] = PublicKey.findProgramAddressSync(
       [Buffer.from("game"), creator.toBuffer(), new anchor.BN(gameNonce).toArrayLike(Buffer, 'be', 4)],
-      PID_TIC_TAC_TOE
+      PID_CONNECT_SQUARES
     );
 
     const existingGame = await client.account.game.fetchNullable(pda);
@@ -211,7 +211,7 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
 export async function getGameAccounts(filters?: Buffer | web3.GetProgramAccountsFilter[]) : Promise<[Game]> {
   return new Promise<any>(async (resolve, reject) => {
       const list = [];
-      const client = tictactoeClient();
+      const client = connectsquaresClient();
       const games = await client.account.game
           .all(filters)
           .catch(err=>{
@@ -234,7 +234,7 @@ export async function getGameAccounts(filters?: Buffer | web3.GetProgramAccounts
 }
 
 export async function getGameByAddress(gameAddress: PublicKey) {
-  const client = tictactoeClient();
+  const client = connectsquaresClient();
   let game = await client.account.game.fetch(gameAddress, 'confirmed');
   return {...game,
     address: gameAddress,
@@ -243,7 +243,7 @@ export async function getGameByAddress(gameAddress: PublicKey) {
 }
 
 export async function joinGame(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
-  const client = tictactoeClient();
+  const client = connectsquaresClient();
   const potAddress = await getPotPda(gameAddress);
   console.log('ttt pot join: ', potAddress.toBase58());
   console.log('ttt player join:', player.toBase58());
@@ -270,7 +270,7 @@ export async function joinGame(connection: Connection, player:PublicKey, gameAdd
 }
 
 export async function gamePlay(connection: Connection, player:PublicKey, gameAddress: PublicKey, tile: Tile) {
-  const client = tictactoeClient();
+  const client = connectsquaresClient();
   const potAddress = await getPotPda(gameAddress);
 
   const tx = await client.methods
@@ -297,7 +297,7 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
 }
 
 export async function gameCancel(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
-  const client = tictactoeClient();
+  const client = connectsquaresClient();
   const potAddress = await getPotPda(gameAddress);
 
   const tx = await client.methods
@@ -324,7 +324,7 @@ export function subscribeToGame(gameAddress: PublicKey, fn) {
     return;
   }
 
-  const client = tictactoeClient();
+  const client = connectsquaresClient();
   const eventEmitter = client.account
     .game
     .subscribe(gameAddress, 'confirmed');

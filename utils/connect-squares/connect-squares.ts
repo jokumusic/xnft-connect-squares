@@ -1,6 +1,6 @@
-export type TicTacToe = {
+export type ConnectSquares = {
   "version": "0.1.0",
-  "name": "tic_tac_toe",
+  "name": "connect_squares",
   "instructions": [
     {
       "name": "gameInit",
@@ -402,9 +402,9 @@ export type TicTacToe = {
   ]
 };
 
-export const IDL: TicTacToe = {
+export const IDL: ConnectSquares = {
   "version": "0.1.0",
-  "name": "tic_tac_toe",
+  "name": "connect_squares",
   "instructions": [
     {
       "name": "gameInit",
