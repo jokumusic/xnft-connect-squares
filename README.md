@@ -1,6 +1,6 @@
-# GamePouch
+# Connect Squares
 
-xNFT containing collections of games
+xNFT for the connect squares game
 
 ## Developing
 
