@@ -1,13 +1,15 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState, useEffect } from "react";
-import { Text, useNavigation, View, Image, useConnection, usePublicKey} from "react-xnft";
-import { Game, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/tic-tac-toe";
+import { Text, useNavigation, View, Image, useConnection, usePublicKey, Button} from "react-xnft";
+import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/tic-tac-toe";
+import { buttonStyle } from "../styles";
 
 
 const viewHeight = 500;
 const xImgUri = "https://pngshare.com/wp-content/uploads/2021/06/Red-X-Black-Background-9.png";
 const oImgUri = "https://us.123rf.com/450wm/rondale/rondale1701/rondale170100555/69948558-fire-letter-o-of-burning-blue-flame-flaming-burn-font-or-bonfire-alphabet-text-with-sizzling-smoke-a.jpg?ver=6";
 const loadingCellUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
+const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
 
 const mockGame = {rows:5,cols:5};
 const SLOTS_PER_TURN = 240;
@@ -26,6 +28,7 @@ export function ScreenTicTacToeGame() {
   //const [turnSlotsRemaining, setTurnSlotRemaining] = useState(SLOTS_PER_TURN);
   const [turnSlotRemainingPercentage, setTurnSlotRemainingPercentage] = useState(100);
   const [currentPlayerImgUri, setCurrentPlayerImgUri] = useState(xImgUri);
+  const [showLoadingImage, setShowLoadingImage] = useState(false);
 
   useEffect(()=>{
     //subscribeToGame(game.address, ()=>{});
@@ -65,19 +68,8 @@ export function ScreenTicTacToeGame() {
     const f = async ()=>{
       setMatrix(game.board);
 
-      if(game.state?.won) {
-        if(game.state.won?.winner?.equals(wallet)){
-          setMessage("YOU WON!");
-        }
-        else {
-          setMessage("YOU LOST!");
-        }
-
-        //const exitTimer = setInterval(()=>{nav.pop(); clearInterval(exitTimer);}, 5000);
-        //return ()=>{
-        //  clearInterval(exitTimer);
-        // }
-      } else if(game.state?.active) {
+      if(game.state?.active) {
+        setMessage("");
         const currentSlot = await connection.getSlot();
         const currentPlayerIndex = calculateCurrentPlayerIndex(currentSlot);
       
@@ -96,11 +88,40 @@ export function ScreenTicTacToeGame() {
         setIsMyTurn(walletMatchesCurrentPlayer);
         setCurrentPlayerImgUri(currentPlayerIndex ? oImgUri : xImgUri);
       }
+      else if(game.state?.won) {
+        if(game.state.won?.winner?.equals(wallet)){
+          setMessage("YOU WON!");
+        }
+        else {
+          setMessage("YOU LOST!");
+        }
+
+        //const exitTimer = setInterval(()=>{nav.pop(); clearInterval(exitTimer);}, 5000);
+        //return ()=>{
+        //  clearInterval(exitTimer);
+        // }
+      } else if(game.state?.waiting) {
+        setMessage("Waiting for other players to join");
+      }
     };
 
   f();
 
   },[game]);
+
+  async function onCancelGameClick() {
+    setShowLoadingImage(true);
+    const confirmation = await gameCancel(connection, wallet, game.address)
+      .catch(err=>{
+        console.log('ttt: ', err.toString());
+        setMessage(err.toString());
+      });
+
+    setShowLoadingImage(false);
+
+    if(confirmation)
+      nav.pop();
+  }
 
   function getCellImage(row,col) {
     const state = matrix[row][col];
@@ -136,6 +157,7 @@ export function ScreenTicTacToeGame() {
         .catch(err=>{
           setLoadingCell(null);
           console.log('ttt: ', err.toString());
+          setMessage(err.toString());
         });
       
       if(updatedGame) {
@@ -189,6 +211,14 @@ export function ScreenTicTacToeGame() {
         <Text style={{color:'red', marginLeft:20}}>{message}</Text>
       }
 
+      { (game.state?.waiting || game.state?.cancelled) && !showLoadingImage &&
+        <Button style={buttonStyle} onClick={()=>onCancelGameClick()}>Cancel Game</Button>
+      }
+
+      { showLoadingImage &&
+        <Image src={loadingImageUri} />
+      }
+
       <View style={{display:'flex', flexDirection:'row'}}>
         <Text style={{marginLeft:10}}>Pot: {(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3).toString()}</Text>
         <Text style={{marginLeft:15}}>Connect: {game.connect.toString()}</Text>
@@ -198,8 +228,9 @@ export function ScreenTicTacToeGame() {
         <View style={{display:'flex', width:50, borderColor: 'green', backgroundColor: 'transparent', borderWidth:1, }}>
           <View style={{display:'flex', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', height:'50%', width: `${turnSlotRemainingPercentage}%`}}/>
         </View>
+        
       </View>
-      
+
       { 
         getTable(game.rows,game.cols)
       }

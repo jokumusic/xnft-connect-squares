@@ -58,6 +58,32 @@ export type TicTacToe = {
       ]
     },
     {
+      "name": "gameCancel",
+      "accounts": [
+        {
+          "name": "game",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pot",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "gameJoin",
       "accounts": [
         {
@@ -264,6 +290,9 @@ export type TicTacToe = {
                 "type": "publicKey"
               }
             ]
+          },
+          {
+            "name": "Cancelled"
           }
         ]
       }
@@ -364,6 +393,11 @@ export type TicTacToe = {
       "code": 6018,
       "name": "ConnectIsGreaterThanNumberOfColumns",
       "msg": "connect cannot be greater than the number of columns"
+    },
+    {
+      "code": 6019,
+      "name": "NotAuthorized",
+      "msg": "not authorized"
     }
   ]
 };
@@ -428,6 +462,32 @@ export const IDL: TicTacToe = {
       ]
     },
     {
+      "name": "gameCancel",
+      "accounts": [
+        {
+          "name": "game",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pot",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "gameJoin",
       "accounts": [
         {
@@ -634,6 +694,9 @@ export const IDL: TicTacToe = {
                 "type": "publicKey"
               }
             ]
+          },
+          {
+            "name": "Cancelled"
           }
         ]
       }
@@ -734,6 +797,11 @@ export const IDL: TicTacToe = {
       "code": 6018,
       "name": "ConnectIsGreaterThanNumberOfColumns",
       "msg": "connect cannot be greater than the number of columns"
+    },
+    {
+      "code": 6019,
+      "name": "NotAuthorized",
+      "msg": "not authorized"
     }
   ]
 };

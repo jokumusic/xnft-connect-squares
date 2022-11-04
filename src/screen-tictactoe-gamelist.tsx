@@ -109,13 +109,10 @@ export function ScreenTicTacToeGameList() {
       return;
     }*/
 
-    console.log('ttt players: ', game.players);
     const isInGame = game.players.findIndex(p=>{
       console.log('ttt p: ', p.toBase58());
       return wallet.equals(p);
     });
-
-    console.log('ttt isInGame: ', isInGame);
 
     if(isInGame> -1) {
       console.log('ttt already an active player. entering game...');      
@@ -126,9 +123,9 @@ export function ScreenTicTacToeGameList() {
         .catch(err=>console.log('ttt: ', err.toString()));
       
       if(joinedGame)
-          nav.push("screen-tictactoe-game", {game: joinedGame});
+        nav.push("screen-tictactoe-game", {game: joinedGame});
     } else {
-      console.log('ttt unable to join game');
+        console.log('ttt unable to join game');
     }  
     
     setShowLoadingImage(false);
@@ -137,8 +134,11 @@ export function ScreenTicTacToeGameList() {
   return (
     <View style={{display:'flex', flexDirection:'column'}}>
       <Text>{debugText}</Text>
-      
-      { !createGameFormIsVisible &&
+      { showLoadingImage &&
+        <Image src={loadingImageUri} style={{ alignSelf: 'center'}}/>
+      }
+
+      { !createGameFormIsVisible && !showLoadingImage &&
       <>
       <Button style={buttonStyle} onClick={()=>onConfigureNewGameClick()}>Create Game</Button>
       
@@ -167,7 +167,8 @@ export function ScreenTicTacToeGameList() {
       </BalancesTableContent>
       </BalancesTable>
       </>
-      }
+      }               
+     
 
       {createGameFormIsVisible &&
       <>
@@ -208,15 +209,11 @@ export function ScreenTicTacToeGameList() {
             <Button style={buttonStyle} onClick={()=>onCreateGameClick()}>Submit</Button>
             <Button style={buttonStyle} onClick={()=>setCreateGameFormIsVisible(false)}>Cancel</Button>
           </>
-          }          
+          }
         </View>
       </>
       }
 
-      { showLoadingImage &&
-        <Image src={loadingImageUri} style={{position: 'absolute', alignSelf: 'center',  bottom: '-5%'}}/>
-      }
-    
     </View>
   );
 }

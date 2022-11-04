@@ -1,6 +1,5 @@
 import React from "react";
-import { Image, Stack, View } from "react-xnft";
-import { ScreenHome } from "./screen-home";
+import { Stack, View } from "react-xnft";
 import { ScreenTicTacToeGame } from "./screen-tictactoe-game";
 import { ScreenTicTacToeGameList } from "./screen-tictactoe-gamelist";
 
@@ -16,10 +15,6 @@ export function App() {
         }}
         options={({ route }) => {
           switch (route.name) {
-            case "screen-home":
-              return {
-                title: "Home",
-              };
             case "screen-tictactoe-game":
               return {
                 title: "Live Game",
@@ -33,10 +28,6 @@ export function App() {
           }
         }}
       >
-        <Stack.Screen
-          name={"screen-home"}
-          component={(props: any) => <ScreenHome {...props} />}
-        />
         <Stack.Screen
           name={"screen-tictactoe-game"}
           component={(props: any) => <ScreenTicTacToeGame {...props} />}

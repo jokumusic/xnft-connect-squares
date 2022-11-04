@@ -15,7 +15,8 @@ export const GameState = {
   waiting:{},
   active:{},
   tie:{},
-  won:{}
+  won:{},
+  cancelled:{},
 };
 
 export interface Game {
@@ -51,8 +52,6 @@ async function getPotPda(gamePda: PublicKey) {
     [Buffer.from("pot"), gamePda.toBuffer()],
     PID_TIC_TAC_TOE
   );
-
-  console.log('ttt potpdabump: ', potPdaBump);
 
   return potPda;
 }
@@ -215,7 +214,11 @@ export async function getGameAccounts(filters?: Buffer | web3.GetProgramAccounts
       const client = tictactoeClient();
       const games = await client.account.game
           .all(filters)
-          .catch(err=>reject(err.toString()));
+          .catch(err=>{
+            console.log('ttt: ', err);
+            reject(err.toString());
+          });
+
       if(!games)
         return;
 
@@ -291,6 +294,28 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
 
   //const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
   return getGameByAddress(gameAddress);
+}
+
+export async function gameCancel(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
+  const client = tictactoeClient();
+  const potAddress = await getPotPda(gameAddress);
+
+  const tx = await client.methods
+    .gameCancel()
+    .accounts({
+      player: player,
+      game: gameAddress,
+      pot:potAddress,
+    })
+    .transaction();
+
+  const { blockhash } = await connection.getLatestBlockhash().catch(err=>console.log('ttt: ' + err));
+  tx.recentBlockhash = blockhash;
+  tx.feePayer = player;
+
+  const txSignature = await window.xnft.solana.send(tx);
+  const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized')
+  return txConfirmation;
 }
 
 export function subscribeToGame(gameAddress: PublicKey, fn) {
