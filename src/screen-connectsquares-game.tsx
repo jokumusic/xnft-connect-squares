@@ -1,8 +1,8 @@
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState, useEffect } from "react";
-import { Text, useNavigation, View, Image, useConnection, usePublicKey, Button} from "react-xnft";
+import { Text, useNavigation, View, Image, usePublicKey, Button, useSolanaConnection} from "react-xnft";
 import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/connect-squares";
 import { buttonStyle } from "../styles";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 
 const viewHeight = 500;
@@ -16,7 +16,7 @@ const SLOTS_PER_TURN = 240;
 
 export function ScreenConnectSquaresGame() {
   const nav = useNavigation();
-  const connection = useConnection();
+  const connection = useSolanaConnection();
   const wallet = usePublicKey();
   const [game, setGame] = useState<Game>(nav.activeRoute.props?.game);
   const [cellsize] = useState(1/game.rows * viewHeight);
@@ -29,12 +29,13 @@ export function ScreenConnectSquaresGame() {
   const [turnSlotRemainingPercentage, setTurnSlotRemainingPercentage] = useState(100);
   const [currentPlayerImgUri, setCurrentPlayerImgUri] = useState(xImgUri);
   const [showLoadingImage, setShowLoadingImage] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(()=>{
     //subscribeToGame(game.address, ()=>{});
     const fetchGame = async ()=>{
       const updatedGame = await getGameByAddress(game.address).catch(err=>console.error(err));
-      console.log('ttt updatedGame: ', updatedGame);
+      //console.log('ttt updatedGame: ', updatedGame);
       if(updatedGame){
         setGame(updatedGame);        
       }
@@ -42,11 +43,32 @@ export function ScreenConnectSquaresGame() {
     
     fetchGame();
     const timer = setInterval(()=>fetchGame(), 5 * 1000);
-
     return ()=>{
       clearInterval(timer);
     };
     
+  },[]);
+
+  useEffect(()=>{
+    const fetchWalletBalance = async () =>{
+      const balance = await connection.getBalance(wallet) / LAMPORTS_PER_SOL;
+      setWalletBalance(balance);
+      //console.log('ttt: got balance ', balance.toFixed(3));
+      
+      /* //NOT WORKING
+      connection.onAccountChange(wallet,
+        (accountInfo,context) => {
+          console.log('ttt balance: ', accountInfo);
+          setWalletBalance(accountInfo.lamports / LAMPORTS_PER_SOL);
+        });
+        */
+    };
+
+    fetchWalletBalance();
+    const timer = setInterval(()=>fetchWalletBalance(), 20 * 1000);
+    return ()=>{
+      clearInterval(timer);
+    };
   },[]);
 
   function calculateCurrentPlayerIndex(currentSlot: number) {    
@@ -60,7 +82,7 @@ export function ScreenConnectSquaresGame() {
     if(playerIndex >= game.joinedPlayers)
       playerIndex = 0;
 
-    console.log(`ttt gameslot=${game.lastMoveSlot}, slot=${currentSlot}, slotDiff=${slotDifference}, turnsPassed:${turnsPassed}, playerIndex:${playerIndex}`);
+    //console.log(`ttt gameslot=${game.lastMoveSlot}, slot=${currentSlot}, slotDiff=${slotDifference}, turnsPassed:${turnsPassed}, playerIndex:${playerIndex}`);
     return playerIndex;
   }
 
@@ -96,6 +118,8 @@ export function ScreenConnectSquaresGame() {
           setMessage("YOU LOST!");
         }
 
+        setWalletBalance(await connection.getBalance(wallet) / LAMPORTS_PER_SOL);
+
         //const exitTimer = setInterval(()=>{nav.pop(); clearInterval(exitTimer);}, 5000);
         //return ()=>{
         //  clearInterval(exitTimer);
@@ -111,9 +135,10 @@ export function ScreenConnectSquaresGame() {
 
   async function onCancelGameClick() {
     setShowLoadingImage(true);
+    setMessage("cancelling game...");
     const confirmation = await gameCancel(connection, wallet, game.address)
       .catch(err=>{
-        console.log('ttt: ', err.toString());
+        //console.log('ttt: ', err.toString());
         setMessage(err.toString());
       });
 
@@ -156,12 +181,13 @@ export function ScreenConnectSquaresGame() {
     const updatedGame = await gamePlay(connection, wallet, game.address, {row,column:col})
         .catch(err=>{
           setLoadingCell(null);
-          console.log('ttt: ', err.toString());
+          //console.log('ttt: ', err.toString());
           setMessage(err.toString());
         });
       
       if(updatedGame) {
           setGame(updatedGame);
+          setWalletBalance(await connection.getBalance(wallet) / LAMPORTS_PER_SOL);
       } else {
         setLoadingCell(null);
       }
@@ -219,16 +245,41 @@ export function ScreenConnectSquaresGame() {
         <Image src={loadingImageUri} />
       }
 
-      <View style={{display:'flex', flexDirection:'row'}}>
-        <Text style={{marginLeft:10}}>Pot: {(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3).toString()}</Text>
-        <Text style={{marginLeft:15}}>Connect: {game.connect.toString()}</Text>
-        <Text style={{marginLeft:15}}>Turn: {isMyTurn ? 'YOURS! ' : 'Player '}</Text><Image src={currentPlayerImgUri} style={{marginLeft:3, width:23,height:23}}/>
+      <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
         
-        <Text style={{marginLeft:15, marginRight:5}}>Timer:</Text>
-        <View style={{display:'flex', width:50, borderColor: 'green', backgroundColor: 'transparent', borderWidth:1, }}>
-          <View style={{display:'flex', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', height:'50%', width: `${turnSlotRemainingPercentage}%`}}/>
+        <View style={{display:'flex', flexDirection:'row', marginLeft:10, fontSize: 10}}>
+          <Text>Wallet:</Text>
+          <Text style={{marginLeft:5}}>{`${walletBalance.toFixed(3)} SOL`}</Text>        
         </View>
+       
+      </View>
+
+      <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+
+        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+            <Text>Pot:</Text>
+            <Text style={{marginLeft:5}}>{(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3)}</Text>
+        </View>   
         
+        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+          <Text>Connect:</Text>
+          <Text style={{marginLeft:5}}>{game.connect.toString()}</Text>
+        </View>
+
+        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+          <Text>Turn:</Text>
+          <View style={{display:'flex', flexDirection:'row', marginLeft:5}}>
+            <Text>{isMyTurn ? 'YOURS! ' : 'Player '}</Text>
+            <Image src={currentPlayerImgUri} style={{marginLeft:3, width:23,height:23}}/></View>
+        </View>
+
+        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+          <Text>Timer:</Text>
+          <View style={{display:'flex', width:50, borderColor: 'green', backgroundColor: 'transparent', borderWidth:1, marginLeft: 5}}>
+            <View style={{display:'flex', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', height:'50%', width: `${turnSlotRemainingPercentage}%`}}/>
+          </View>
+        </View>
+
       </View>
 
       { 

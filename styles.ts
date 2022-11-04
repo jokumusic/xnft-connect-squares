@@ -7,6 +7,15 @@ export const buttonStyle: React.CSSProperties = {
   borderRadius: "5px",
   cursor: "pointer",
 };
+export const tableHeaderRowStyle: React.CSSProperties = {
+  backgroundColor: "pink",
+  color: 'red',
+  textAlign: "center",
+  borderColor: 'black',
+  borderWidth: 1,
+  borderBottom: 1,
+  borderBottomColor: 'black',
+};
 export const tableRowStyle: React.CSSProperties = {
   background: "white",
   color: 'black',
@@ -16,6 +25,7 @@ export const tableRowStyle: React.CSSProperties = {
 };
 export const tableCellStyle: React.CSSProperties = {
   background: "white",
+  backgroundColor: 'green',
   color: 'black',
   textAlign: "center",
   borderColor: 'black',

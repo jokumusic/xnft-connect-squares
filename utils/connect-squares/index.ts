@@ -163,24 +163,22 @@ export async function createGame(connection: Connection, creator:PublicKey, rows
 
 
 export async function getOpenGames(connection:Connection, wallet: PublicKey): Promise<[Game]> {
-  const url = connection.rpcEndpoint;
-  const cacheKey = `${url}:OpenGames:${wallet.toBase58()}`;
-  const val = await LocalStorage.get(cacheKey);
+  //*** cache doesn't reconstitue correctly with Publickey */
+  //const url = connection.rpcEndpoint;
+  //const cacheKey = `${url}:OpenGames:${wallet.toBase58()}`;
+  //const val = await LocalStorage.get(cacheKey);
 
-  //
-  // Only fetch this once every 10 seconds.
-  //
+  /*
   if (val) {
     const resp = JSON.parse(val);
     if (
       Object.keys(resp.value).length > 0 &&
       Date.now() - resp.ts < 1000 * 10
     ) {
-      return await resp.value;
+      return await {...resp.value, creator: new PublicKey(resp.value.creator)};
     }
   }
-
-
+*/
   const waitingGamesPromise = getGameAccounts([
     { memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
   ]);
@@ -193,11 +191,11 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
   const activeGames = queriedGames[1] as [Game];
   const currentWalletActiveGames = activeGames.filter(g=>g.players.findIndex(p=>wallet.equals(p)) >= 0);
 
-  const newResp = [
+  const newResp : [Game]= [
     ...currentWalletActiveGames.sort((a,b)=>{return a.initTimestamp - b.initTimestamp}),
     ...queriedGames[0].sort((a,b)=>{ return a.initTimestamp - b.initTimestamp})
   ];
-
+/*
   LocalStorage.set(
     cacheKey,
     JSON.stringify({
@@ -205,6 +203,7 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
       value: newResp,
     })
   );
+  */
   return newResp;
 }
 
@@ -245,8 +244,7 @@ export async function getGameByAddress(gameAddress: PublicKey) {
 export async function joinGame(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
   const client = connectsquaresClient();
   const potAddress = await getPotPda(gameAddress);
-  console.log('ttt pot join: ', potAddress.toBase58());
-  console.log('ttt player join:', player.toBase58());
+
   const tx = await client.methods
   .gameJoin()
   .accounts({
@@ -283,16 +281,13 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
     .transaction();
 
   
-  console.log('getting latest blockhash');
   const { blockhash } = await connection.getLatestBlockhash().catch(err=>console.log('ttt: ' + err));
   tx.recentBlockhash = blockhash;
   tx.feePayer = player;
 
-  console.log('sending transaction');
   const txSignature = await window.xnft.solana.send(tx);
-  console.log("ttt gamePlay tx signature", txSignature);
-
   //const txConfirmation = await connection!.confirmTransaction(txSignature,'finalized');
+  
   return getGameByAddress(gameAddress);
 }
 

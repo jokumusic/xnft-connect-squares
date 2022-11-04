@@ -7,9 +7,8 @@ import { Text, useNavigation, View, Image, Button, TextField,
 } from "react-xnft";
 import * as xnft from "react-xnft";
 import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/connect-squares";
-import {tableRowStyle,tableCellStyle, buttonStyle} from "../styles";
-
-const LAMPORTS_PER_SOL = 1000000000;
+import {tableRowStyle,tableCellStyle, buttonStyle, tableHeaderRowStyle} from "../styles";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const defaultNewGameSettings = {
   wager: 0.001,
@@ -40,10 +39,32 @@ export function ScreenConnectSquaresGameList() {
   const [newGameCols, setNewGameCols] = useState(defaultNewGameSettings.cols);
   const [newGameConnect, setNewGameConnect] = useState(defaultNewGameSettings.connect);
   const [newGameMaxPlayers, setNewGameMaxPlayers] = useState(defaultNewGameSettings.maxPlayers);  
-  const [debugText, setDebugText] = useState("");
+  const [message, setMessage] = useState("");
   const [createGameMessage, setCreateGameMessage] = useState("");
   const [showLoadingImage, setShowLoadingImage] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
 
+  useEffect(()=>{
+    const fetchWalletBalance = async () =>{
+      const balance = await connection.getBalance(wallet) / LAMPORTS_PER_SOL;
+      setWalletBalance(balance);
+      //console.log('ttt: got balance ', balance.toFixed(3));
+      
+      /* //NOT WORKING
+      connection.onAccountChange(wallet,
+        (accountInfo,context) => {
+          console.log('ttt balance: ', accountInfo);
+          setWalletBalance(accountInfo.lamports / LAMPORTS_PER_SOL);
+        });
+        */
+    };
+
+    fetchWalletBalance();
+    const timer = setInterval(()=>fetchWalletBalance(), 20 * 1000);
+    return ()=>{
+      clearInterval(timer);
+    };
+  },[]);
 
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
@@ -97,12 +118,13 @@ export function ScreenConnectSquaresGameList() {
         nav.push("screen-connectsquares-game", {game: createdGame});
       }
 
+    setWalletBalance(await connection.getBalance(wallet) / LAMPORTS_PER_SOL);
     setShowLoadingImage(false);
   }
 
   async function onJoinGameClick(game: Game) {
-    console.log('ttt joining game:', game.address.toBase58());
     setShowLoadingImage(true);
+    setMessage("joining game...");
 
     /*if(!(game.state?.active || game.state?.waiting)) {
       console.log('ttt unable to enter game, because game state is ', game.state);
@@ -110,22 +132,20 @@ export function ScreenConnectSquaresGameList() {
     }*/
 
     const isInGame = game.players.findIndex(p=>{
-      console.log('ttt p: ', p.toBase58());
       return wallet.equals(p);
     });
 
-    if(isInGame> -1) {
-      console.log('ttt already an active player. entering game...');      
+    if(isInGame> -1) {     
       nav.push("screen-connectsquares-game", {game});
     } 
     else if(game.state?.waiting) {
       const joinedGame = await joinGame(connection, wallet, game.address)
-        .catch(err=>console.log('ttt: ', err.toString()));
+        .catch(err=>setMessage(err.toString()));
       
       if(joinedGame)
         nav.push("screen-connectsquares-game", {game: joinedGame});
     } else {
-        console.log('ttt unable to join game');
+        setMessage('unable to join game :(');
     }  
     
     setShowLoadingImage(false);
@@ -133,10 +153,13 @@ export function ScreenConnectSquaresGameList() {
 
   return (
     <View style={{display:'flex', flexDirection:'column'}}>
-      <Text>{debugText}</Text>
+      
+      <Text>{message}</Text>
       { showLoadingImage &&
         <Image src={loadingImageUri} style={{ alignSelf: 'center'}}/>
       }
+
+      <Text>Wallet Balance: {`${walletBalance.toFixed(3)} SOL`}</Text>
 
       { !createGameFormIsVisible && !showLoadingImage &&
       <>
@@ -144,14 +167,14 @@ export function ScreenConnectSquaresGameList() {
       
       <BalancesTable>
       <BalancesTableHead title={"Available Games To Join"}>
-        <BalancesTableRow style={tableRowStyle}>
-          <BalancesTableCell title={"Wager"}/>
-          <BalancesTableCell title={"Layout"}/>
-          <BalancesTableCell title={"Connect"}/>
-          <BalancesTableCell title={"Created"}/>
-        </BalancesTableRow>
       </BalancesTableHead>
       <BalancesTableContent>
+        <BalancesTableRow style={tableHeaderRowStyle}>
+          <BalancesTableCell title={"Wager"} />
+          <BalancesTableCell title={"Layout"}/>
+          <BalancesTableCell title={"Connect"}/>
+          <BalancesTableCell title={"Status"}/>
+        </BalancesTableRow>
       { games.map((game:Game, index)=>(
         <BalancesTableRow
           key={"game_" + index.toString()}
@@ -160,7 +183,22 @@ export function ScreenConnectSquaresGameList() {
           <BalancesTableCell style={tableCellStyle} title={(game.wager/LAMPORTS_PER_SOL).toFixed(3).toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>
           <BalancesTableCell style={tableCellStyle} title={game.connect.toString()}/>
-          <BalancesTableCell style={tableCellStyle} title={new Date(game.initTimestamp * 1000).toLocaleString()}/>
+          {game.state.waiting && wallet.equals(game.creator) &&
+            <BalancesTableCell style={tableCellStyle} title={"waiting"}/>
+          }
+          {game.state.waiting && !wallet.equals(game.creator) &&
+            <BalancesTableCell style={tableCellStyle} title={"open"}/>
+          }
+          {game.state.active &&
+            <BalancesTableCell style={tableCellStyle} title={"live"}/>
+          }
+                {/* putting the following in BalanceTableCell.title doesn't work. It doesn't show the changed value after the first render
+            game.state.waiting ? wallet.equals(game.creator) && 'waiting' || 'open'
+            : game.state.active ? 'live' 
+            : game.state.cancelled ? 'cancelled'
+            : game.state.tie ? 'tie'
+            : game.state.won ? 'finished'
+        : 'unknown'*/}
         </BalancesTableRow>
         ))
       }        
@@ -184,14 +222,14 @@ export function ScreenConnectSquaresGameList() {
           <Text>Rows:</Text>
           <TextField
             value={newGameRows?.toString()}
-            onChange={(e) => setNewGameRows(e.target.value)}            
+            onChange={(e) => setNewGameRows(e.target.value)}
             placeholder={"enter number of grid rows"}/>
         </View>
         <View>
           <Text>Columns:</Text>
           <TextField
             value={newGameCols?.toString()}
-            onChange={(e) => setNewGameCols(e.target.value)}            
+            onChange={(e) => setNewGameCols(e.target.value)}
             placeholder={"enter number of grid columns"}/>
         </View>
         
