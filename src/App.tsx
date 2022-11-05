@@ -12,7 +12,6 @@ export function App() {
     <View style={{ background: "black", height: "100%" }}>
       <Stack.Navigator
         initialRoute={{ name: "screen-connectsquares-gamelist" }}
-        navButtonRight={"wallet balance"}
         style={{
           display: "flex",
           justifyContent: "center",
@@ -23,11 +22,11 @@ export function App() {
           switch (route.name) {
             case "screen-connectsquares-game":
               return {
-                title: `Balance: ${globalContext.walletBalance.toFixed(3)} SOL`,
+                title: `Balance: ${globalContext.walletBalance.toFixed(3)}`,
               };
             case "screen-connectsquares-gamelist":
               return {
-                title: `Balance: ${globalContext.walletBalance.toFixed(3)} SOL`
+                title: `Balance: ${globalContext.walletBalance.toFixed(3)}`
               };
             default:
               throw new Error("unknown route");
@@ -41,7 +40,6 @@ export function App() {
         <Stack.Screen
           name={"screen-connectsquares-gamelist"}
           component={(props: any) => <ScreenConnectSquaresGameList {...props} />}
-          options={{title: 'scren option'}}
         />
 
       </Stack.Navigator>

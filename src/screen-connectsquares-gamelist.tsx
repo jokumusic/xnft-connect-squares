@@ -36,11 +36,11 @@ export function ScreenConnectSquaresGameList() {
   //const [games, setGames] = useState<[Game]>([]);
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
   //const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
-  const [newGameWager, setNewGameWager] = useState(defaultNewGameSettings.wager);
-  const [newGameRows, setNewGameRows] = useState(defaultNewGameSettings.rows);
-  const [newGameCols, setNewGameCols] = useState(defaultNewGameSettings.cols);
-  const [newGameConnect, setNewGameConnect] = useState(defaultNewGameSettings.connect);
-  const [newGameMaxPlayers, setNewGameMaxPlayers] = useState(defaultNewGameSettings.maxPlayers);  
+  const [newGameWager, setNewGameWager] = useState<number>(defaultNewGameSettings.wager);
+  const [newGameRows, setNewGameRows] = useState<number>(defaultNewGameSettings.rows);
+  const [newGameCols, setNewGameCols] = useState<number>(defaultNewGameSettings.cols);
+  const [newGameConnect, setNewGameConnect] = useState<number>(defaultNewGameSettings.connect);
+  const [newGameMaxPlayers, setNewGameMaxPlayers] = useState<number>(defaultNewGameSettings.maxPlayers);  
   const [message, setMessage] = useState("");
   const [createGameMessage, setCreateGameMessage] = useState("");
   const [showLoadingImage, setShowLoadingImage] = useState(false);
@@ -191,29 +191,29 @@ export function ScreenConnectSquaresGameList() {
           <Text>Wager:</Text>
           <TextField
             value={newGameWager.toString()}
-            onChange={(e) => setNewGameWager(e.target.value)}
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameWager(n)}}
             placeholder={"enter amount to wager"}/>
         </View>
         <View>
           <Text>Rows:</Text>
           <TextField
             value={newGameRows?.toString()}
-            onChange={(e) => setNewGameRows(e.target.value)}
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameRows(n)}}
             placeholder={"enter number of grid rows"}/>
         </View>
         <View>
           <Text>Columns:</Text>
           <TextField
             value={newGameCols?.toString()}
-            onChange={(e) => setNewGameCols(e.target.value)}
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameCols(n)}}
             placeholder={"enter number of grid columns"}/>
         </View>
         
         <View>
           <Text>Connections To Win:</Text>
           <TextField
-            value={newGameConnect.toString()}            
-            onChange={(e) => setNewGameConnect(e.target.value)}            
+            value={newGameConnect.toString()}          
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameConnect(n)}}
             placeholder={"number of connections to win"}/>
         </View>
       
