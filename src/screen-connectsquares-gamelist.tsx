@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ReactXnft from "react-xnft";
 import { Text, useNavigation, View, Image, Button, TextField,
   Table,TableRow,TableHead,
@@ -9,6 +9,7 @@ import * as xnft from "react-xnft";
 import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/connect-squares";
 import {tableRowStyle,tableCellStyle, buttonStyle, tableHeaderRowStyle} from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { GlobalContext } from "./GlobalProvider";
 
 const defaultNewGameSettings = {
   wager: 0.001,
@@ -26,6 +27,7 @@ ReactXnft.events.on("connect", () => {
 const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
 
 export function ScreenConnectSquaresGameList() {
+  //const globalContext = useContext(GlobalContext);
   const nav = useNavigation();
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
@@ -42,29 +44,6 @@ export function ScreenConnectSquaresGameList() {
   const [message, setMessage] = useState("");
   const [createGameMessage, setCreateGameMessage] = useState("");
   const [showLoadingImage, setShowLoadingImage] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(0);
-
-  useEffect(()=>{
-    const fetchWalletBalance = async () =>{
-      const balance = await connection.getBalance(wallet) / LAMPORTS_PER_SOL;
-      setWalletBalance(balance);
-      //console.log('ttt: got balance ', balance.toFixed(3));
-      
-      /* //NOT WORKING
-      connection.onAccountChange(wallet,
-        (accountInfo,context) => {
-          console.log('ttt balance: ', accountInfo);
-          setWalletBalance(accountInfo.lamports / LAMPORTS_PER_SOL);
-        });
-        */
-    };
-
-    fetchWalletBalance();
-    const timer = setInterval(()=>fetchWalletBalance(), 20 * 1000);
-    return ()=>{
-      clearInterval(timer);
-    };
-  },[]);
 
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
@@ -118,7 +97,6 @@ export function ScreenConnectSquaresGameList() {
         nav.push("screen-connectsquares-game", {game: createdGame});
       }
 
-    setWalletBalance(await connection.getBalance(wallet) / LAMPORTS_PER_SOL);
     setShowLoadingImage(false);
   }
 
@@ -158,8 +136,6 @@ export function ScreenConnectSquaresGameList() {
       { showLoadingImage &&
         <Image src={loadingImageUri} style={{ alignSelf: 'center'}}/>
       }
-
-      <Text>Wallet Balance: {`${walletBalance.toFixed(3)} SOL`}</Text>
 
       { !createGameFormIsVisible && !showLoadingImage &&
       <>

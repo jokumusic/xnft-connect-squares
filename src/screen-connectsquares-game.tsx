@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Text, useNavigation, View, Image, usePublicKey, Button, useSolanaConnection} from "react-xnft";
 import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/connect-squares";
 import { buttonStyle } from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { GlobalContext } from "./GlobalProvider";
 
 
 const viewHeight = 500;
@@ -15,6 +16,7 @@ const mockGame = {rows:5,cols:5};
 const SLOTS_PER_TURN = 240;
 
 export function ScreenConnectSquaresGame() {
+  const globalContext = useContext(GlobalContext);
   const nav = useNavigation();
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
@@ -29,7 +31,6 @@ export function ScreenConnectSquaresGame() {
   const [turnSlotRemainingPercentage, setTurnSlotRemainingPercentage] = useState(100);
   const [currentPlayerImgUri, setCurrentPlayerImgUri] = useState(xImgUri);
   const [showLoadingImage, setShowLoadingImage] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(()=>{
     //subscribeToGame(game.address, ()=>{});
@@ -47,28 +48,6 @@ export function ScreenConnectSquaresGame() {
       clearInterval(timer);
     };
     
-  },[]);
-
-  useEffect(()=>{
-    const fetchWalletBalance = async () =>{
-      const balance = await connection.getBalance(wallet) / LAMPORTS_PER_SOL;
-      setWalletBalance(balance);
-      //console.log('ttt: got balance ', balance.toFixed(3));
-      
-      /* //NOT WORKING
-      connection.onAccountChange(wallet,
-        (accountInfo,context) => {
-          console.log('ttt balance: ', accountInfo);
-          setWalletBalance(accountInfo.lamports / LAMPORTS_PER_SOL);
-        });
-        */
-    };
-
-    fetchWalletBalance();
-    const timer = setInterval(()=>fetchWalletBalance(), 20 * 1000);
-    return ()=>{
-      clearInterval(timer);
-    };
   },[]);
 
   function calculateCurrentPlayerIndex(currentSlot: number) {    
@@ -118,7 +97,7 @@ export function ScreenConnectSquaresGame() {
           setMessage("YOU LOST!");
         }
 
-        setWalletBalance(await connection.getBalance(wallet) / LAMPORTS_PER_SOL);
+        globalContext.refreshWalletBalance();
 
         //const exitTimer = setInterval(()=>{nav.pop(); clearInterval(exitTimer);}, 5000);
         //return ()=>{
@@ -187,7 +166,7 @@ export function ScreenConnectSquaresGame() {
       
       if(updatedGame) {
           setGame(updatedGame);
-          setWalletBalance(await connection.getBalance(wallet) / LAMPORTS_PER_SOL);
+          globalContext.refreshWalletBalance();
       } else {
         setLoadingCell(null);
       }
@@ -244,15 +223,6 @@ export function ScreenConnectSquaresGame() {
       { showLoadingImage &&
         <Image src={loadingImageUri} />
       }
-
-      <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
-        
-        <View style={{display:'flex', flexDirection:'row', marginLeft:10, fontSize: 10}}>
-          <Text>Wallet:</Text>
-          <Text style={{marginLeft:5}}>{`${walletBalance.toFixed(3)} SOL`}</Text>        
-        </View>
-       
-      </View>
 
       <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
 

@@ -1,12 +1,12 @@
 import ReactXnft, { AnchorDom } from "react-xnft";
 import { App } from "./App";
-import {GamePouchProvider} from "../components/GamePouchProvider";
+import { GlobalProvider } from "./GlobalProvider";
 
 
 ReactXnft.render(
   <AnchorDom>
-    <GamePouchProvider>
+    <GlobalProvider>
       <App />
-    </GamePouchProvider>
+    </GlobalProvider>
   </AnchorDom>
 );
