@@ -41,3 +41,11 @@ export const gameTileStyle: React.CSSProperties = {
   borderRadius: "5px",
   cursor: "pointer",
 };
+export const donateButtonStyle: React.CSSProperties = {
+  display: 'flex',
+  background: "gray",
+  color: "black",
+  marginRight: 95,
+  textAlign: 'center',
+  cursor: "pointer",
+};

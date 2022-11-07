@@ -59,9 +59,9 @@
     react "^17.0.0"
 
 "@coral-xyz/xnft-cli@^0.2.0-latest.95":
-  version "0.2.0-latest.425"
-  resolved "https://registry.yarnpkg.com/@coral-xyz/xnft-cli/-/xnft-cli-0.2.0-latest.425.tgz#4ee24884fc7719531e3e52d76a020f4825be787d"
-  integrity sha512-eT/agnV2D5T7IdgNVBh/OL9QU/0Si08haLe7lAqIrk8hw6KwsHieVAXMrN+kAPvlsdPk8AaKfbFUVWIvvPOxJg==
+  version "0.2.0-latest.427"
+  resolved "https://registry.yarnpkg.com/@coral-xyz/xnft-cli/-/xnft-cli-0.2.0-latest.427.tgz#4c0b0b30177859d8286276b4ab2ec809be7973bf"
+  integrity sha512-lwm3JwvH5zpPk6fI5i0HU6eJpXsT/B2XEU1k9nrSmTQ2YezpzxAFoZUWUnEve4a8B1xgfYejXwSrNfEFGOoRJA==
   dependencies:
     "@parcel/config-default" "^2.7.0"
     "@parcel/core" "^2.7.0"
@@ -3194,9 +3194,9 @@ react-transition-group@^4.4.5:
     prop-types "^15.6.2"
 
 react-xnft@^0.2.0-latest.425:
-  version "0.2.0-latest.425"
-  resolved "https://registry.yarnpkg.com/react-xnft/-/react-xnft-0.2.0-latest.425.tgz#7609874ab03f9f3b7b9edd41d2ce2e82244f6b0a"
-  integrity sha512-W9eiug8Bor0UF6QGd51I91qK8cXjzgwFbNvpA2z4JPRhwHQaiZv7U7ZnMbcrXNRL5wSUU5YU6p3q+LeRRCQhOg==
+  version "0.2.0-latest.427"
+  resolved "https://registry.yarnpkg.com/react-xnft/-/react-xnft-0.2.0-latest.427.tgz#fece2986c7ce109be0a571225faf085de470ee67"
+  integrity sha512-2R/RqJ7+Wm4mtBuTmuExN2774nWzHnLNw/+582bb24FpYiuX7Jety1Xo3ie47uyJpK3qYwMejAP2VVEiRkO1OQ==
   dependencies:
     "@coral-xyz/common-public" "*"
     "@coral-xyz/themes" "*"

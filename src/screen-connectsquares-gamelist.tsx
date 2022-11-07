@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import ReactXnft from "react-xnft";
 import { Text, useNavigation, View, Image, Button, TextField,
-  Table,TableRow,TableHead,
   BalancesTable, BalancesTableHead, BalancesTableRow, BalancesTableCell, BalancesTableContent,
-  usePublicKey, useConnection, useSolanaConnection,
+  usePublicKey, useSolanaConnection,
 } from "react-xnft";
-import * as xnft from "react-xnft";
 import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts, joinGame, } from "../utils/connect-squares";
-import {tableRowStyle,tableCellStyle, buttonStyle, tableHeaderRowStyle} from "../styles";
+import {tableRowStyle,tableCellStyle, buttonStyle, tableHeaderRowStyle, donateButtonStyle} from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { GlobalContext } from "./GlobalProvider";
 import {loadingImgUri} from "../assets";
 
 const defaultNewGameSettings = {
@@ -49,7 +46,7 @@ export function ScreenConnectSquaresGameList() {
   useEffect(()=>{
     nav.setNavButtonRight(()=>(
       <Button
-       style={{backgroundColor:'gray',marginRight:100, width:50, height:45}}
+       style={donateButtonStyle}
        onClick={()=>{ nav.push("screen-donate")}}
       >
         Donate!

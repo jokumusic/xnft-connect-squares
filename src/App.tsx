@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Button, Stack, useNavigation, View } from "react-xnft";
+import { Stack, View } from "react-xnft";
 import { GlobalContext } from "./GlobalProvider";
 import { ScreenConnectSquaresGame } from "./screen-connectsquares-game";
 import { ScreenConnectSquaresGameList } from "./screen-connectsquares-gamelist";

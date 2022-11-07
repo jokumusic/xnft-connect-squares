@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Text, useNavigation, View, Image, usePublicKey, Button, useSolanaConnection} from "react-xnft";
-import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, useGame } from "../utils/connect-squares";
-import { buttonStyle } from "../styles";
+import { Game, gameCancel, gamePlay, getGameByAddress, Tile } from "../utils/connect-squares";
+import { buttonStyle, donateButtonStyle } from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { GlobalContext } from "./GlobalProvider";
 import {loadingImgUri, oImgUri, xImgUri} from "../assets";
@@ -31,7 +31,7 @@ export function ScreenConnectSquaresGame() {
   useEffect(()=>{
     nav.setNavButtonRight(()=>(
       <Button
-       style={{backgroundColor:'gray',marginRight:100, width:50, height:45}}
+       style={donateButtonStyle}
        onClick={()=>{ nav.push("screen-donate")}}
       >
         Donate!
@@ -204,7 +204,7 @@ export function ScreenConnectSquaresGame() {
           }
         </View>);
   
-    return (<View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>{elements}</View>);
+    return (<View key={`cell_${row}`} style={{display: 'flex', flexDirection: 'row', width: '100%'}}>{elements}</View>);
   }
   
   function getTable(rows: number, cols: number) {
@@ -252,8 +252,8 @@ export function ScreenConnectSquaresGame() {
 
         <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
           <Text>Timer:</Text>
-          <View style={{display:'flex', width:50, borderColor: 'green', backgroundColor: 'transparent', borderWidth:1, marginLeft: 5}}>
-            <View style={{display:'flex', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', height:'50%', width: `${turnSlotRemainingPercentage}%`}}/>
+          <View style={{display:'flex', width:60, backgroundColor: 'transparent', marginLeft: 5}}>
+            <View style={{display:'flex', height:'50%', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', width: `${turnSlotRemainingPercentage}%`}}/>
           </View>
         </View>
 
