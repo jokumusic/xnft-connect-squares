@@ -10,6 +10,7 @@ import {useOpenGames, GameState, Game, createGame, getOpenGames, getGameAccounts
 import {tableRowStyle,tableCellStyle, buttonStyle, tableHeaderRowStyle} from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { GlobalContext } from "./GlobalProvider";
+import {loadingImgUri} from "../assets";
 
 const defaultNewGameSettings = {
   wager: 0.001,
@@ -24,7 +25,7 @@ ReactXnft.events.on("connect", () => {
   console.log('ttt: connected');
 });
 */
-const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
+
 
 export function ScreenConnectSquaresGameList() {
   //const globalContext = useContext(GlobalContext);
@@ -145,7 +146,7 @@ export function ScreenConnectSquaresGameList() {
       
       <Text>{message}</Text>
       { showLoadingImage &&
-        <Image src={loadingImageUri} style={{ alignSelf: 'center'}}/>
+        <Image src={loadingImgUri} style={{ alignSelf: 'center'}}/>
       }
 
       { !createGameFormIsVisible && !showLoadingImage &&

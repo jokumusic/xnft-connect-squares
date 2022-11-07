@@ -4,14 +4,10 @@ import { Game, gameCancel, gamePlay, getGameByAddress, subscribeToGame, Tile, us
 import { buttonStyle } from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { GlobalContext } from "./GlobalProvider";
+import {loadingImgUri, oImgUri, xImgUri} from "../assets";
 
 
 const viewHeight = 500;
-const xImgUri = "https://pngshare.com/wp-content/uploads/2021/06/Red-X-Black-Background-9.png";
-const oImgUri = "https://us.123rf.com/450wm/rondale/rondale1701/rondale170100555/69948558-fire-letter-o-of-burning-blue-flame-flaming-burn-font-or-bonfire-alphabet-text-with-sizzling-smoke-a.jpg?ver=6";
-const loadingCellUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
-const loadingImageUri = 'https://media.tenor.com/wpSo-8CrXqUAAAAj/loading-loading-forever.gif';
-
 const mockGame = {rows:5,cols:5};
 const SLOTS_PER_TURN = 240;
 
@@ -148,7 +144,7 @@ export function ScreenConnectSquaresGame() {
     
     if(state === null) {    
       if(isLoadingCell) {
-        return (<Image key={`cellimg_${row}_${col}`} src={loadingCellUri} style={{width:'90%',height:'90%', alignSelf: 'center'}}/>);
+        return (<Image key={`cellimg_${row}_${col}`} src={loadingImgUri} style={{width:'90%',height:'90%', alignSelf: 'center'}}/>);
       } else {
         return (<></>);
       }
@@ -232,7 +228,7 @@ export function ScreenConnectSquaresGame() {
       }
 
       { showLoadingImage &&
-        <Image src={loadingImageUri} />
+        <Image src={loadingImgUri} />
       }
 
       <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
