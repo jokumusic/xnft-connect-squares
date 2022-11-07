@@ -69,6 +69,15 @@ export function ScreenConnectSquaresGameList() {
   }
   
   async function onCreateGameClick() {
+    const wager = Number(newGameWager);
+    if(Number.isNaN(wager)){
+      setCreateGameMessage("Wager is not a valid number");
+      return;
+    }
+    if(wager < 0) {
+      setCreateGameMessage("Wager must be greater than or equal to 0");
+      return;
+    }
     if(newGameRows < 2) {
       setCreateGameMessage("Rows must be greater than 2");
       return;
@@ -81,10 +90,7 @@ export function ScreenConnectSquaresGameList() {
       setCreateGameMessage("Max Players must be greater than 2");
       return;
     }
-    if(newGameWager < 0) {
-      setCreateGameMessage("Wager must be greater than or equal to 0");
-      return;
-    }
+   
     if(newGameConnect < 3) {
       setCreateGameMessage("Connections to win must be greater than 2");
       return;
@@ -100,7 +106,7 @@ export function ScreenConnectSquaresGameList() {
 
     setShowLoadingImage(true);
     const createdGame = await createGame(connection, wallet, newGameRows, newGameCols, newGameConnect, newGameMaxPlayers, 
-      newGameMaxPlayers, Math.floor(newGameWager * LAMPORTS_PER_SOL))
+      newGameMaxPlayers, Math.floor(wager * LAMPORTS_PER_SOL))
       .catch(err=>setCreateGameMessage(err.toString()));
 
       if(createdGame) {
@@ -203,7 +209,7 @@ export function ScreenConnectSquaresGameList() {
           <Text>Wager:</Text>
           <TextField
             value={newGameWager.toString()}
-            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameWager(n)}}
+            onChange={(e) =>{setNewGameWager(e.target.value)}}
             placeholder={"enter amount to wager"}/>
         </View>
         <View>

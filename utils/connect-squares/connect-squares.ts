@@ -232,6 +232,10 @@ export type ConnectSquares = {
             "type": "u8"
           },
           {
+            "name": "version",
+            "type": "u8"
+          },
+          {
             "name": "creator",
             "type": "publicKey"
           },
@@ -717,6 +721,10 @@ export const IDL: ConnectSquares = {
         "fields": [
           {
             "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "version",
             "type": "u8"
           },
           {

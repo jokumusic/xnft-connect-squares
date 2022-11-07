@@ -9,7 +9,7 @@ import { Program, utils } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
 import { IDL as IDL_CONNECT_SQUARES, ConnectSquares } from "./connect-squares";
 
-export const PID_CONNECT_SQUARES = new PublicKey("9ZSV8zYqPgsv4NXeJLN1x74wpR6LNVdFGgwnmAXH8TM9");
+export const PID_CONNECT_SQUARES = new PublicKey("ZG3VZPMEpziUq1RvcMJUbHr2dfWjHhWRjGHbgdg1LTR");
 
 export const GameState = {
   waiting:{},
@@ -22,6 +22,7 @@ export const GameState = {
 export interface Game {
   address: PublicKey,
   bump: number,
+  version: number,
   creator: PublicKey,
   nonce: number,
   state: typeof GameState,
@@ -189,11 +190,11 @@ export async function getOpenGames(connection:Connection, wallet: PublicKey): Pr
   }
 */
   const waitingGamesPromise = getGameAccounts([
-    { memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
+    { memcmp: { offset: 46, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([0])) }},
   ]);
 
   const activeGamesPromise = getGameAccounts([
-    { memcmp: { offset: 45, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([1])) }},
+    { memcmp: { offset: 46, bytes: anchor.utils.bytes.bs58.encode(Buffer.from([1])) }},
   ]);
 
   const queriedGames = await Promise.all([waitingGamesPromise, activeGamesPromise]).catch(err=>console.log(err));
