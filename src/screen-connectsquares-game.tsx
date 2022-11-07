@@ -204,7 +204,7 @@ export function ScreenConnectSquaresGame() {
           }
         </View>);
   
-    return (<View key={`cell_${row}`} style={{display: 'flex', flexDirection: 'row', width: '100%'}}>{elements}</View>);
+    return (<View key={`row_${row}`} style={{display: 'flex', flexDirection: 'row', width: '100%'}}>{elements}</View>);
   }
   
   function getTable(rows: number, cols: number) {
