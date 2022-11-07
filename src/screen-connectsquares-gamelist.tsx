@@ -203,7 +203,7 @@ export function ScreenConnectSquaresGameList() {
      
 
       {createGameFormIsVisible &&
-      <>
+      <View style={{marginLeft: 5, marginRight: 5}}>
         <Text style={{color:'red'}}>{createGameMessage}</Text>
         <View>
           <Text>Wager:</Text>
@@ -235,7 +235,7 @@ export function ScreenConnectSquaresGameList() {
             placeholder={"number of connections to win"}/>
         </View>
       
-        <View style={{display:'flex', flexDirection:'row', alignContent:'center'}}>
+        <View style={{display:'flex', flexDirection:'row', alignContent:'center', alignSelf:'center', justifyContent: 'center'}}>
           { showLoadingImage ||
           <>
             <Button style={buttonStyle} onClick={()=>onCreateGameClick()}>Submit</Button>
@@ -243,7 +243,7 @@ export function ScreenConnectSquaresGameList() {
           </>
           }
         </View>
-      </>
+      </View>
       }
 
     </View>
