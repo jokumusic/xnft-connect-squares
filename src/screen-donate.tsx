@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { Text, View, Button, TextField,
+import React, { useState, useContext } from "react";
+import { Text, View, Button, TextField, Image,
   usePublicKey, useSolanaConnection, useNavigation
 } from "react-xnft";
 import { donate } from "../utils/connect-squares";
 import { buttonStyle } from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { GlobalContext } from "./GlobalProvider";
+import { loadingImgUri } from "../assets";
 
 export function ScreenDonate() {
+    const globalContext = useContext(GlobalContext);
     const nav = useNavigation();
     const connection = useSolanaConnection();
     const wallet = usePublicKey();
     const [amount, setAmount] = useState<number>(0);
     const [message, setMessage] = useState("Thanks for donating, it helps continue development.");
+    const [showLoadingImage, setShowLoadingImage] = useState(false);
     
     async function onDonateClick() {
         const n = Number(amount);
@@ -25,8 +29,18 @@ export function ScreenDonate() {
             return;
         }
         const donation = n * LAMPORTS_PER_SOL;
-        donate(connection, wallet, donation);
-        nav.pop();
+        
+        setShowLoadingImage(true);
+        const confirmation = await donate(connection, wallet, donation)
+            .catch(err=>setMessage(err.toString()));
+
+        if(confirmation) {
+            setMessage("");
+            globalContext.refreshWalletBalance();
+            nav.pop();
+        }
+
+        setShowLoadingImage(false);
     }
 
     async function onCancelClick() {
@@ -36,6 +50,9 @@ export function ScreenDonate() {
     return (
         <View>
             <Text style={{color:'red'}}>{message}</Text>
+            { showLoadingImage &&
+                <Image src={loadingImgUri} style={{ alignSelf: 'center'}}/>
+            }
         
             <View>
                 <Text>Amount To Donate:</Text>

@@ -361,5 +361,7 @@ export async function donate(connection: Connection, player: PublicKey, lamports
         })
       );
 
-  const txSignature = await window.xnft.solana.send(tx);  
+  const txSignature = await window.xnft.solana.send(tx);
+  const txConfirmation = await connection!.confirmTransaction(txSignature)
+  return txConfirmation;
 }
