@@ -1,8 +1,9 @@
 import React, { useContext } from "react";
-import { Button, Stack, View } from "react-xnft";
+import { Button, Stack, useNavigation, View } from "react-xnft";
 import { GlobalContext } from "./GlobalProvider";
 import { ScreenConnectSquaresGame } from "./screen-connectsquares-game";
 import { ScreenConnectSquaresGameList } from "./screen-connectsquares-gamelist";
+import { ScreenDonate } from "./screen-donate";
 
 
 export function App() {
@@ -28,6 +29,10 @@ export function App() {
               return {
                 title: `Balance: ${globalContext.walletBalance.toFixed(3)}`
               };
+            case "screen-donate":
+              return {
+                title: `Balance: ${globalContext.walletBalance.toFixed(3)}`
+              };
             default:
               throw new Error("unknown route");
           }
@@ -40,6 +45,10 @@ export function App() {
         <Stack.Screen
           name={"screen-connectsquares-gamelist"}
           component={(props: any) => <ScreenConnectSquaresGameList {...props} />}
+        />
+        <Stack.Screen
+          name={"screen-donate"}
+          component={(props: any) => <ScreenDonate {...props} />}
         />
 
       </Stack.Navigator>

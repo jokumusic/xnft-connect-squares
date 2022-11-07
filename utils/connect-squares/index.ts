@@ -9,7 +9,7 @@ import { Program, utils } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
 import { IDL as IDL_CONNECT_SQUARES, ConnectSquares } from "./connect-squares";
 
-export const PID_CONNECT_SQUARES = new PublicKey("v8n2qgpkyp3yXh1sJ6YKkSs12XDBqLvn3HbTvCKMmz3");
+export const PID_CONNECT_SQUARES = new PublicKey("9ZSV8zYqPgsv4NXeJLN1x74wpR6LNVdFGgwnmAXH8TM9");
 
 export const GameState = {
   waiting:{},
@@ -44,6 +44,15 @@ export interface Game {
 export interface Tile{
   row: number,
   column: number,
+}
+
+async function getMetadataPda() {
+  const [metadataPda, metadataPdaBump] = PublicKey.findProgramAddressSync( 
+    [Buffer.from("metadata")],
+    PID_CONNECT_SQUARES
+  );
+
+  return metadataPda;
 }
 
 
@@ -270,6 +279,7 @@ export async function joinGame(connection: Connection, player:PublicKey, gameAdd
 export async function gamePlay(connection: Connection, player:PublicKey, gameAddress: PublicKey, tile: Tile) {
   const client = connectsquaresClient();
   const potAddress = await getPotPda(gameAddress);
+  const metadataAddress = await getMetadataPda();
 
   const tx = await client.methods
     .gamePlay(tile)
@@ -277,6 +287,7 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
       player: player,
       game: gameAddress,
       pot:potAddress,
+      metadata: metadataAddress,
     })
     .transaction();
 
@@ -290,6 +301,7 @@ export async function gamePlay(connection: Connection, player:PublicKey, gameAdd
   
   return getGameByAddress(gameAddress);
 }
+
 
 export async function gameCancel(connection: Connection, player:PublicKey, gameAddress: PublicKey) {
   const client = connectsquaresClient();
@@ -334,4 +346,19 @@ export function subscribeToGame(gameAddress: PublicKey, fn) {
       //fn(g);
     });
     */
+}
+
+export async function donate(connection: Connection, player: PublicKey, lamports: number) {
+  const metadataAddress = await getMetadataPda();
+  const tx = new anchor.web3
+      .Transaction()
+      .add(
+        anchor.web3.SystemProgram.transfer({
+          fromPubkey: player,
+          toPubkey: metadataAddress,
+          lamports,
+        })
+      );
+
+  const txSignature = await window.xnft.solana.send(tx);  
 }

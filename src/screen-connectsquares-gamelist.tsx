@@ -45,6 +45,17 @@ export function ScreenConnectSquaresGameList() {
   const [createGameMessage, setCreateGameMessage] = useState("");
   const [showLoadingImage, setShowLoadingImage] = useState(false);
 
+  useEffect(()=>{
+    nav.setNavButtonRight(()=>(
+      <Button
+       style={{backgroundColor:'gray',marginRight:100, width:50, height:45}}
+       onClick={()=>{ nav.push("screen-donate")}}
+      >
+        Donate!
+      </Button>
+    ));
+  },[]);
+
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
     setCreateGameMessage("");

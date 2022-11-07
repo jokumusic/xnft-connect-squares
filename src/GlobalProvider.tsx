@@ -7,6 +7,7 @@ export interface GlobalProvider {
     wallet: PublicKey,
     walletBalance: number,
     refreshWalletBalance() : Promise<void>,
+    navPush(s:string),
 }
 
 export interface refreshWalletBalanceFunc {

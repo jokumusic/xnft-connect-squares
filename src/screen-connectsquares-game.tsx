@@ -33,6 +33,17 @@ export function ScreenConnectSquaresGame() {
   const [showLoadingImage, setShowLoadingImage] = useState(false);
 
   useEffect(()=>{
+    nav.setNavButtonRight(()=>(
+      <Button
+       style={{backgroundColor:'gray',marginRight:100, width:50, height:45}}
+       onClick={()=>{ nav.push("screen-donate")}}
+      >
+        Donate!
+      </Button>
+    ));
+  },[]);
+  
+  useEffect(()=>{
     //subscribeToGame(game.address, ()=>{});
     const fetchGame = async ()=>{
       const updatedGame = await getGameByAddress(game.address).catch(err=>console.error(err));
