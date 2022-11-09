@@ -15,7 +15,8 @@ export function ScreenConnectSquaresGame() {
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
   const [game, setGame] = useState<Game>(nav.activeRoute.props?.game);
-  const [cellsize] = useState(1 / (game.rows > game.cols ? game.rows : game.cols) * ((window.innerHeight - 85) < window.innerWidth ?  (window.innerHeight - 85) : window.innerWidth) );
+  const [dimensions, setDimensions] = useState({width: window.innerWidth - 5, height: window.innerHeight - 85});
+  const [cellsize] = useState(1 / (game.rows > game.cols ? game.rows : game.cols) * (dimensions.height < dimensions.width ?  dimensions.height : dimensions.width) );
   const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
   const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
   const [message,setMessage] = useState("");
@@ -229,28 +230,28 @@ export function ScreenConnectSquaresGame() {
         <Image src={loadingImgUri} />
       }
 
-      <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+      <View style={{display:'flex', flexDirection:'row', justifyContent: 'center', fontSize: 15}}>
 
-        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+        <View style={{display:'flex', flexDirection:'row', marginLeft:8}}>
             <Text>Pot:</Text>
-            <Text style={{marginLeft:5}}>{(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3)}</Text>
+            <Text style={{marginLeft:5, color: 'yellow'}}>{(game.wager * game.joinedPlayers / LAMPORTS_PER_SOL).toFixed(3)}</Text>
         </View>   
         
-        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+        <View style={{display:'flex', flexDirection:'row', marginLeft:8}}>
           <Text>Connect:</Text>
-          <Text style={{marginLeft:5}}>{game.connect.toString()}</Text>
+          <Text style={{marginLeft:5, color: 'yellow'}}>{game.connect.toString()}</Text>
         </View>
 
-        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+        <View style={{display:'flex', flexDirection:'row', marginLeft:8}}>
           <Text>Turn:</Text>
-          <View style={{display:'flex', flexDirection:'row', marginLeft:5}}>
-            <Text>{isMyTurn ? 'YOURS! ' : 'Player '}</Text>
-            <Image src={currentPlayerImgUri} style={{marginLeft:3, width:23,height:23}}/></View>
+          <View style={{display:'flex', flexDirection:'row', marginLeft:5}}>            
+            <Text style={{color: 'yellow'}}>{isMyTurn ? 'Go! ' : 'Wait '}</Text>
+            <Image src={currentPlayerImgUri} style={{marginLeft:3, width:22,height:22}}/></View>        
         </View>
 
-        <View style={{display:'flex', flexDirection:'row', marginLeft:10}}>
+        <View style={{display:'flex', flexDirection:'row', marginLeft:8}}>
           <Text>Timer:</Text>
-          <View style={{display:'flex', width:60, backgroundColor: 'transparent', marginLeft: 5}}>
+          <View style={{display:'flex', width:50, backgroundColor: 'transparent', marginLeft: 5}}>
             <View style={{display:'flex', height:'50%', backgroundColor: turnSlotRemainingPercentage < 25 ? 'red' : 'green', alignSelf: 'center', width: `${turnSlotRemainingPercentage}%`}}/>
           </View>
         </View>

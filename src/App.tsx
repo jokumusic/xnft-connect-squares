@@ -18,20 +18,21 @@ export function App() {
           justifyContent: "center",
           alignContent: 'center',
         }}
+        titleStyle={{display: 'flex', justifyContent: 'start', fontSize: 18}}
         options={
           ({ route }) => {
           switch (route.name) {
             case "screen-connectsquares-game":
               return {
-                title: `Balance: ${globalContext.walletBalance.toFixed(3)}`,
+                title: `${globalContext.walletBalance.toFixed(3)} Balance`,
               };
             case "screen-connectsquares-gamelist":
               return {
-                title: `Balance: ${globalContext.walletBalance.toFixed(3)}`
+                title: `${globalContext.walletBalance.toFixed(3)} Balance`,
               };
             case "screen-donate":
               return {
-                title: `Balance: ${globalContext.walletBalance.toFixed(3)}`
+                title: `${globalContext.walletBalance.toFixed(3)} Balance`
               };
             default:
               throw new Error("unknown route");

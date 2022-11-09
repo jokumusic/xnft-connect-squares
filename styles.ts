@@ -3,6 +3,7 @@ export const buttonStyle: React.CSSProperties = {
   color: "black",
   width: "35%",
   margin: "15px",
+  padding: 5,
   textAlign: "center",
   borderRadius: "5px",
   cursor: "pointer",
@@ -48,4 +49,6 @@ export const donateButtonStyle: React.CSSProperties = {
   marginRight: 95,
   textAlign: 'center',
   cursor: "pointer",
+  fontSize: 12,
+  padding: 5,
 };
