@@ -33,12 +33,7 @@ export function ScreenConnectSquaresGameList() {
   const [games, isLoading] = useOpenGames(connection, wallet, true);
   //const [games, setGames] = useState<[Game]>([]);
   const [createGameFormIsVisible, setCreateGameFormIsVisible] = useState(false);
-  //const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
-  const [newGameWager, setNewGameWager] = useState<number>(defaultNewGameSettings.wager);
-  const [newGameRows, setNewGameRows] = useState<number>(defaultNewGameSettings.rows);
-  const [newGameCols, setNewGameCols] = useState<number>(defaultNewGameSettings.cols);
-  const [newGameConnect, setNewGameConnect] = useState<number>(defaultNewGameSettings.connect);
-  const [newGameMaxPlayers, setNewGameMaxPlayers] = useState<number>(defaultNewGameSettings.maxPlayers);  
+  const [newGameSettings, setNewGameSettings] = useState(defaultNewGameSettings);
   const [message, setMessage] = useState("");
   const [createGameMessage, setCreateGameMessage] = useState("");
   const [showLoadingImage, setShowLoadingImage] = useState(false);
@@ -57,16 +52,12 @@ export function ScreenConnectSquaresGameList() {
   async function onConfigureNewGameClick() {
     console.log('configuring new game...');
     setCreateGameMessage("");
-    setNewGameCols(defaultNewGameSettings.cols);
-    setNewGameRows(defaultNewGameSettings.cols);
-    setNewGameWager(defaultNewGameSettings.wager);
-    setNewGameMaxPlayers(defaultNewGameSettings.maxPlayers);
-    //setNewGameSettings(defaultNewGameSettings);
+    setNewGameSettings(defaultNewGameSettings);
     setCreateGameFormIsVisible(true);
   }
   
   async function onCreateGameClick() {
-    const wager = Number(newGameWager);
+    const wager = Number(newGameSettings.wager);
     if(Number.isNaN(wager)){
       setCreateGameMessage("Wager is not a valid number");
       return;
@@ -74,36 +65,35 @@ export function ScreenConnectSquaresGameList() {
     if(wager < 0) {
       setCreateGameMessage("Wager must be greater than or equal to 0");
       return;
-    }
-    if(newGameRows < 2) {
+    }    
+    if(newGameSettings.rows < 3) {
       setCreateGameMessage("Rows must be greater than 2");
       return;
     }
-    if(newGameCols < 2) {
+    if(newGameSettings.cols < 3) {
       setCreateGameMessage("Columns must be greater than 2");
       return;
     }
-    if(newGameMaxPlayers < 2) {
+    if(newGameSettings.maxPlayers < 2) {
       setCreateGameMessage("Max Players must be greater than 2");
       return;
-    }
-   
-    if(newGameConnect < 3) {
+    }   
+    if(newGameSettings.connect < 3) {
       setCreateGameMessage("Connections to win must be greater than 2");
       return;
     }
-    if(newGameConnect > newGameRows) {
+    if(newGameSettings.connect > newGameSettings.rows) {
       setCreateGameMessage("Connections to win cannot be greater than grid rows");
       return;
     }
-    if(newGameConnect > newGameCols) {
+    if(newGameSettings.connect > newGameSettings.cols) {
       setCreateGameMessage("Connections to win cannot be greater than grid columns");
       return;
     }
 
     setShowLoadingImage(true);
-    const createdGame = await createGame(connection, wallet, newGameRows, newGameCols, newGameConnect, newGameMaxPlayers, 
-      newGameMaxPlayers, Math.floor(wager * LAMPORTS_PER_SOL))
+    const createdGame = await createGame(connection, wallet, newGameSettings.rows, newGameSettings.cols, newGameSettings.connect, newGameSettings.maxPlayers, 
+      newGameSettings.maxPlayers, Math.floor(wager * LAMPORTS_PER_SOL))
       .catch(err=>setCreateGameMessage(err.toString()));
 
       if(createdGame) {
@@ -174,22 +164,14 @@ export function ScreenConnectSquaresGameList() {
           <BalancesTableCell style={tableCellStyle} title={(game.wager/LAMPORTS_PER_SOL).toFixed(3).toString()}/>
           <BalancesTableCell style={tableCellStyle} title={`${game.rows}x${game.cols}`}/>
           <BalancesTableCell style={tableCellStyle} title={game.connect.toString()}/>
-          {game.state.waiting && wallet.equals(game.creator) &&
-            <BalancesTableCell style={tableCellStyle} title={"waiting"}/>
-          }
-          {game.state.waiting && !wallet.equals(game.creator) &&
-            <BalancesTableCell style={tableCellStyle} title={"open"}/>
-          }
-          {game.state.active &&
-            <BalancesTableCell style={tableCellStyle} title={"live"}/>
-          }
-                {/* putting the following in BalanceTableCell.title doesn't work. It doesn't show the changed value after the first render
+          <BalancesTableCell style={tableCellStyle} title={(()=>
             game.state.waiting ? wallet.equals(game.creator) && 'waiting' || 'open'
             : game.state.active ? 'live' 
             : game.state.cancelled ? 'cancelled'
             : game.state.tie ? 'tie'
             : game.state.won ? 'finished'
-        : 'unknown'*/}
+            : 'unknown')()
+          }/>
         </BalancesTableRow>
         ))
       }        
@@ -205,30 +187,30 @@ export function ScreenConnectSquaresGameList() {
         <View>
           <Text>Wager:</Text>
           <TextField
-            value={newGameWager.toString()}
-            onChange={(e) =>{setNewGameWager(e.target.value)}}
+            value={newGameSettings.wager.toString()}
+            onChange={(e) =>{setNewGameSettings({...newGameSettings, wager: e.target.value})}}
             placeholder={"enter amount to wager"}/>
         </View>
         <View>
           <Text>Rows:</Text>
           <TextField
-            value={newGameRows?.toString()}
-            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameRows(n)}}
+            value={newGameSettings.rows.toString()}
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameSettings({...newGameSettings, rows: n})}}
             placeholder={"enter number of grid rows"}/>
         </View>
         <View>
           <Text>Columns:</Text>
           <TextField
-            value={newGameCols?.toString()}
-            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameCols(n)}}
+            value={newGameSettings.cols.toString()}
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameSettings({...newGameSettings, cols: n})}}
             placeholder={"enter number of grid columns"}/>
         </View>
         
         <View>
           <Text>Connections To Win:</Text>
           <TextField
-            value={newGameConnect.toString()}          
-            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameConnect(n)}}
+            value={newGameSettings.connect.toString()}          
+            onChange={(e) =>{const n = Number(e.target.value); Number.isNaN(n) || setNewGameSettings({...newGameSettings, connect: n})}}
             placeholder={"number of connections to win"}/>
         </View>
       
