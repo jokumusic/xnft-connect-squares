@@ -7,8 +7,6 @@ import { GlobalContext } from "./GlobalProvider";
 import {loadingImgUri, oImgUri, xImgUri} from "../assets";
 
 
-const viewHeight = 500;
-const mockGame = {rows:5,cols:5};
 const SLOTS_PER_TURN = 240;
 
 export function ScreenConnectSquaresGame() {
@@ -17,7 +15,7 @@ export function ScreenConnectSquaresGame() {
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
   const [game, setGame] = useState<Game>(nav.activeRoute.props?.game);
-  const [cellsize] = useState(1/game.rows * viewHeight);
+  const [cellsize] = useState(1 / (game.rows > game.cols ? game.rows : game.cols) * ((window.innerHeight - 85) < window.innerWidth ?  (window.innerHeight - 85) : window.innerWidth) );
   const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
   const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
   const [message,setMessage] = useState("");
@@ -204,7 +202,7 @@ export function ScreenConnectSquaresGame() {
           }
         </View>);
   
-    return (<View key={`row_${row}`} style={{display: 'flex', flexDirection: 'row', width: '100%'}}>{elements}</View>);
+    return (<View key={`row_${row}`} style={{display: 'flex', flexDirection: 'row',}}>{elements}</View>);
   }
   
   function getTable(rows: number, cols: number) {
