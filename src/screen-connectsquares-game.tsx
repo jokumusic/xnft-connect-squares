@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Text, useNavigation, View, Image, usePublicKey, Button, useSolanaConnection} from "react-xnft";
+import { Text, useNavigation, View, Image, usePublicKey, Button, useSolanaConnection, useDimensions} from "react-xnft";
 import { Game, gameCancel, gamePlay, getGameByAddress, Tile } from "../utils/connect-squares";
 import { buttonStyle, donateButtonStyle } from "../styles";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -15,8 +15,8 @@ export function ScreenConnectSquaresGame() {
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
   const [game, setGame] = useState<Game>(nav.activeRoute.props?.game);
-  const [dimensions, setDimensions] = useState({width: window.innerWidth - 5, height: window.innerHeight - 85});
-  const [cellsize] = useState(1 / (game.rows > game.cols ? game.rows : game.cols) * (dimensions.height < dimensions.width ?  dimensions.height : dimensions.width) );
+  const dimensions = useDimensions();
+  const [cellSize, setCellSize] = useState<number>(100);
   const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
   const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
   const [message,setMessage] = useState("");
@@ -26,6 +26,14 @@ export function ScreenConnectSquaresGame() {
   const [turnSlotRemainingPercentage, setTurnSlotRemainingPercentage] = useState(100);
   const [currentPlayerImgUri, setCurrentPlayerImgUri] = useState(xImgUri);
   const [showLoadingImage, setShowLoadingImage] = useState(false);
+
+  useEffect(()=>{
+    const largestCellCount = game.rows > game.cols ? game.rows : game.cols;
+    const adjustedHeight = dimensions.height - 85;
+    const adjustedWidth = dimensions.width - 5;
+    const smallestDimension =  adjustedHeight < adjustedWidth ? adjustedHeight : adjustedWidth;
+    setCellSize(1 / largestCellCount * smallestDimension);
+  },[dimensions]);
 
   useEffect(()=>{
     nav.setNavButtonRight(()=>(
@@ -195,7 +203,7 @@ export function ScreenConnectSquaresGame() {
       elements.push(
         <View
           key={`cell_${row}_${col}`}
-          style={{display:'flex', border: isMyTurn ? '1px solid green' : '1px solid red', color: 'white', width: cellsize, height: cellsize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
+          style={{display:'flex', border: isMyTurn ? '1px solid green' : '1px solid red', color: 'white', width: cellSize, height: cellSize, alignContent: 'center', alignItems: 'center', justifyContent:'center'}}
           onClick={()=>onCellClick(row,col)}
         >
           { 
@@ -217,7 +225,6 @@ export function ScreenConnectSquaresGame() {
 
   return (
     <View>
-      
       {message &&
         <Text style={{color:'red', marginLeft:20}}>{message}</Text>
       }

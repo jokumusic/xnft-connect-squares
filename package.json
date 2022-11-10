@@ -22,6 +22,6 @@
     "assert": "^2.0.0",
     "process": "^0.11.10",
     "react": "^17.0.2",
-    "react-xnft": "^0.2.0-latest.425"
+    "react-xnft": "latest"
   }
 }
