@@ -15,7 +15,7 @@ export function ScreenConnectSquaresGame() {
   const connection = useSolanaConnection();
   const wallet = usePublicKey();
   const [game, setGame] = useState<Game>(nav.activeRoute.props?.game);
-  const dimensions = useDimensions();
+  const dimensions = useDimensions(50);
   const [cellSize, setCellSize] = useState<number>(100);
   const [playerTurn, setPlayerTurn] = useState(game.currentPlayerIndex);
   const [matrix, setMatrix] = useState(game.board); //Array.from({length: game.rows},()=> Array.from({length: game.cols}, () => null)));
